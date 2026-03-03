@@ -1,0 +1,396 @@
+# 🗺️ Diagramas de Fluxo — Ar.Ia (Clínica Aria)
+
+> Versão: `Ar.Ia - Agendamento Clínica.json` (64 nodes · 96 edges) · Gerado em 02/03/2026
+
+---
+
+## 📌 Legenda
+
+| Símbolo | Significado |
+|---|---|
+| 🟢 | Início / Entrada |
+| 🔵 | Mensagem ao paciente |
+| 🤖 | IA OpenAI (mission ou prompt) |
+| 🌐 | Chamada API → N8N |
+| 🔀 | Condicional / Decisão |
+| 🔴 | Fim do atendimento |
+| 👤 | Transferência para humano |
+
+---
+
+## 🔀 Menu Inicial
+
+```mermaid
+flowchart TD
+    START([🟢 Início]) --> N3
+
+    N3["📋 **Node 3** — Menu Principal\n─────────────────────\n_Olá 👋 Seja bem-vindo(a)!\nComo podemos te ajudar?_"]
+
+    N3 -->|"3.1 — Quero agendar\numa consulta"| AGD
+    N3 -->|"3.2 — Já tenho um\nagendamento"| CR
+    N3 -->|"3.3 — Saber mais sobre\na Clínica/Tratamentos"| DD
+    N3 -->|"3.4 — Falar com\na Recepção"| REC
+
+    AGD(["🟦 FLUXO 1\nAgendamento"])
+    CR(["🟦 FLUXO 2\nCancelar / Reagendar"])
+    DD(["🟦 FLUXO 3\nTirar Dúvidas"])
+    REC(["🟦 FLUXO 4\nFalar com Recepção"])
+
+    style N3 fill:#1e3a5f,color:#fff,stroke:#4a9eff
+    style AGD fill:#1a472a,color:#fff
+    style CR fill:#563a00,color:#fff
+    style DD fill:#3b0069,color:#fff
+    style REC fill:#4a0000,color:#fff
+```
+
+---
+
+## 🟦 Fluxo 1 — Agendamento
+
+```mermaid
+flowchart TD
+    START([🟢 3.1 Quero agendar]) --> N93
+
+    N93["🌐 **Node 93** — API N8N\n─────────────────────\nevento: verificar_evento_id\ntelefone: {{ powerzap_phone }}\n─────────────────────\nResposta: existe_agendamento"]
+
+    N93 --> N94{"🔀 **Node 94**\nJá tem agendamento?"}
+
+    N94 -->|"✅ existe = true"| N95
+    N94 -->|"❌ não existe"| N39
+
+    N95["🤖 **Node 95** — IA Consultoria\n─────────────────────\nInforma consulta existente\ne detecta intenção do paciente"]
+    N95 --> N73
+
+    N39["🔵 **Node 39** — Mensagem\n─────────────────────\n_Sou o responsável por\nagendar sua consulta_ 😊"]
+    N39 --> N60
+
+    N60["🌐 **Node 60** — API N8N\n─────────────────────\nevento: get_data_base\n─────────────────────\nResposta: data_atual_timestamp"]
+    N60 --> N21
+
+    N21["🤖 **Node 21** — IA TRIAGEM\nasst_Uzba5lkn9eH51kVJ801VyHp2\n─────────────────────\n① Nome completo\n② Data nascimento + cálculo de idade\n③ Já conhece a clínica?\n④ Queixa + tipo de tratamento\n⑤ Data desejada\n⑥ Período (manhã/tarde)\n─────────────────────\n📤 Vars: nome_completo, data_iso,\nperiodo, tipo_tratamento,\nqueixa_principal, data_nascimento,\nidade_paciente"]
+
+    N21 --> N79{"🔀 **Node 79**\nidade < 17?"}
+    N79 -->|"✅ menor de idade"| N80
+    N79 -->|"❌ maior/igual"| N11
+
+    N80([🔴 Node 80 — END\nMenor de idade])
+
+    N11["🔵 **Node 11** — Mensagem\n─────────────────────\n_Um momento enquanto\nverifique os horários..._ ⏳"]
+    N11 --> N9
+
+    N9["🌐 **Node 9** — API N8N\n─────────────────────\nevento: verificacao\ndata_iso: {{ gpt:data_iso }}\nperiodo: {{ gpt:periodo }}\n─────────────────────\nResposta: success, horarios_disponiveis"]
+
+    N9 -->|"✅ success = true"| N29
+    N9 -->|"❌ success = false"| N24
+
+    N29{"🔀 **Node 29**\nHorários disponíveis?"}
+    N29 -->|"29.1 — true\nHá horários"| N26
+    N29 -->|"29.2 — false\nSem horários"| N30
+    N29 -->|"29.3 — erro\nnenhuma condição"| N24
+
+    N26["🤖 **Node 26** — IA HORÁRIOS\nasst_AqxRlWWcFPUds3wEudBRTokR\n─────────────────────\nApresenta horários disponíveis\nInterpreta escolha do paciente\nConfirma horário escolhido\n─────────────────────\n📤 Vars: horario_escolhido,\nredirecionamento"]
+    N26 --> N89
+
+    N89{"🔀 **Node 89**\nredirecionamento = triagem?"}
+    N89 -->|"✅ triagem"| N21
+    N89 -->|"❌ nenhum"| N27
+
+    N27["📋 **Node 27** — Confirmação\n─────────────────────\n_Confirme os dados:_\nNome / Telefone / Data\nHorário / Período\n─────────────────────\nBotões: SIM | NÃO"]
+
+    N27 -->|"27.1 — SIM"| N33
+    N27 -->|"27.2 — NÃO"| N32
+
+    N32["🔵 **Node 32** — Mensagem\n_O que deseja alterar?_"]
+    N32 --> N21
+
+    N33["🌐 **Node 33** — API N8N\n─────────────────────\nevento: agendamento\nnome_completo / telefone\ndata_iso / horario_consulta\ntipo_tratamento / queixa_principal\n─────────────────────\nResposta: status_consulta,\nsuccess_agendamento"]
+
+    N33 -->|"33.1 — success"| N34
+    N33 -->|"33.2 — fail"| N24
+
+    N34{"🔀 **Node 34**\nResultado do agendamento?"}
+    N34 -->|"34.1 — confirmed"| N81
+    N34 -->|"34.2 — false"| N36
+    N34 -->|"34.3 — none"| N36
+
+    N81["🤖 **Node 81** — IA Confirmação\ngpt-4o\n─────────────────────\nGera mensagem de confirmação\nprofissional da consulta"]
+    N81 --> N82
+
+    N82["🤖 **Node 82** — IA Pós-Confirmação\nasst_uWgjpce7lr8nTKrIK8Aj3vxA\n─────────────────────\nVerifica dúvidas restantes\nEncerra cordialmente"]
+    N82 --> N83
+
+    N83["🔵 **Node 83** — Mensagem\n_A Clínica Aria agradece\no seu contato!_"]
+    N83 --> N37([🔴 Node 37 — END])
+
+    N30["🔵 **Node 30** — Mensagem\n_Infelizmente essa data\nnão está disponível._"]
+    N30 --> N76
+
+    N36["🤖 **Node 36** — IA Horário Indisponível\nasst_AqxRlWWcFPUds3wEudBRTokR\n─────────────────────\nInforma que horário foi ocupado\nOferece novo horário\n📤 Vars: redirecionamento"]
+    N36 --> N90
+
+    N90{"🔀 **Node 90**\nredirecionamento = atendente?"}
+    N90 -->|"✅ atendente"| HANDOVER
+    N90 -->|"❌ nenhum"| N21
+
+    N76["📋 **Node 76** — Pergunta\n_Deseja escolher\numa nova data?_\nBotões: SIM | Encerrar"]
+    N76 -->|"76.1 — SIM"| N21
+    N76 -->|"76.2 — Encerrar"| N77
+
+    N77["🔵 **Node 77** — Mensagem\n_Claro, se precisar\nestamos por aqui!_ 😃"]
+    N77 --> N78([🔴 Node 78 — END])
+
+    N24["🔵 **Node 24** — Fallback\n─────────────────────\n_Tivemos uma instabilidade\npontual no sistema._"]
+    N24 --> HANDOVER
+
+    HANDOVER["🤖 **Node 74** — IA Handover\ngpt-4 (whisper)\n─────────────────────\nGera resumo interno\npara o atendente humano"]
+    HANDOVER --> N75
+
+    N75(["👤 **Node 75** — TRANSFER\n─────────────────────\nTransferência para\natendente (user: 134031)"])
+
+    N73{"🔀 **Node 73**\nintencao_detectada?"}
+    N73 -->|"agendamento"| N39
+    N73 -->|"cancelamento"| AGD_CANCEL["🟦 → Fluxo Cancelar"]
+    N73 -->|"reagendamento"| AGD_REA["🟦 → Fluxo Reagendar"]
+    N73 -->|"sair"| END87([🔴 Node 87 — END])
+    N73 -->|"none"| N3["📋 → Menu Principal"]
+
+    N21 -->|"21.2 — SAIR"| N38([🔴 Node 38 — END])
+    N36 -->|"36.2 — fechar"| N88([🔴 Node 88 — END])
+
+    style N9 fill:#c17c00,color:#fff
+    style N33 fill:#c17c00,color:#fff
+    style N60 fill:#c17c00,color:#fff
+    style N93 fill:#c17c00,color:#fff
+    style N21 fill:#4a0080,color:#fff
+    style N26 fill:#4a0080,color:#fff
+    style N36 fill:#4a0080,color:#fff
+    style N81 fill:#4a0080,color:#fff
+    style N82 fill:#4a0080,color:#fff
+    style N74 fill:#4a0080,color:#fff
+    style N95 fill:#4a0080,color:#fff
+    style N24 fill:#7a0000,color:#fff
+    style N75 fill:#003366,color:#fff
+```
+
+---
+
+## 🟦 Fluxo 2 — Cancelar / Reagendar
+
+```mermaid
+flowchart TD
+    START([🟢 3.2 Já tenho agendamento]) --> N84
+
+    N84["📋 **Node 84** — Escolha\n─────────────────────\n_Deseja cancelar ou reagendar?_\nBotões: Cancelar | Reagendar"]
+
+    N84 -->|"84.1 — Cancelar"| CANCEL
+    N84 -->|"84.2 — Reagendar"| REAGEND
+
+    %% ── CANCELAR ──
+    subgraph CANCEL_FLOW ["❌ Cancelamento"]
+        CANCEL["🔵 **Node 44** — Mensagem\n_Um momento enquanto\nverifique seu agendamento..._"]
+        CANCEL --> N42
+
+        N42["🌐 **Node 42** — API N8N\n─────────────────────\nevento: verificar_evento_id\ntelefone: {{ powerzap_phone }}\n─────────────────────\nResposta: existe_agendamento,\ncalendar_id, event_id,\ndata_hora, sumario_consulta"]
+
+        N42 -->|"42.1 — existe = true"| N45
+        N42 -->|"42.2 — none/erro"| N24C
+
+        N45{"🔀 **Node 45**\nexiste agendamento?"}
+        N45 -->|"45.1 — true"| N40
+        N45 -->|"45.2 — false"| N46
+
+        N46["🔵 **Node 46** — Mensagem\n_Não encontrei agendamento\ncom esse contato._\n→ Redireciona para triagem"]
+        N46 --> TriagemC["🤖 Node 21\n(Triagem)"]
+
+        N40["🤖 **Node 40** — IA Cancelamento\nasst_R106DbQu9AvR5Q90FeH2Urnc\n─────────────────────\nInforma consulta encontrada\nConfirma com paciente\nPergunta motivo\nAguarda confirmação\n─────────────────────\n📤 Vars: motivo_cancelamento\nSinal: CONFIRMAR_CANCELAMENTO"]
+
+        N40 -->|"exit: CONFIRMAR_CANCELAMENTO"| N47
+        N40 -->|"40.3 — erro/fail"| N24C
+
+        N47["🌐 **Node 47** — API N8N\n─────────────────────\nevento: cancelamento\ntelefone: {{ powerzap_phone }}\ncalendar_id: {{ api:calendar_id }}\nevent_id: {{ api:event_id }}\n─────────────────────\n✅ Cria evento em 'Cancelamentos'\n🗑️ Deleta agendamento original"]
+
+        N47 -->|"47.1 — success"| N48
+        N47 -->|"47.2 — erro"| N24C
+
+        N48["🔵 **Node 48** — Mensagem\n_Sua consulta foi cancelada.\nCaso queira remarcar,\nentre em contato novamente._"]
+        N48 --> N49([🔴 Node 49 — END])
+
+        N24C["🔵 **Node 24** — Fallback\n_Instabilidade pontual_"] --> HANDOVER_C["👤 Node 74/75\nTransfer para atendente"]
+    end
+
+    %% ── REAGENDAR ──
+    subgraph REAGEND_FLOW ["🔄 Reagendamento"]
+        REAGEND["🔵 **Node 50** — Mensagem\n_Um momento enquanto\nverififico seu agendamento atual..._"]
+        REAGEND --> N61
+
+        N61["🌐 **Node 61** — API N8N\n─────────────────────\nevento: get_data_base\n─────────────────────\nResposta: data_atual_timestamp_rea"]
+        N61 --> N51
+
+        N51["🌐 **Node 51** — API N8N\n─────────────────────\nevento: verificar_evento_id\ntelefone: {{ powerzap_phone }}\n─────────────────────\nResposta: existe_agendamento_reagendamento\ncalendar_id_reagendamento\nevent_id_reagendamento\nnome_completo_reagendamento"]
+
+        N51 -->|"51.1 — existe"| N55
+        N51 -->|"51.2 — none/erro"| N24R
+
+        N55{"🔀 **Node 55**\n existe agendamento?"}
+        N55 -->|"55.1 — true"| N54
+        N55 -->|"55.2 — false"| N53
+
+        N53["🔵 **Node 53** — Mensagem\n_Não encontrei agendamento.\nVou te redirecionar para\niniciar um agendamento._"]
+        N53 --> TriagemR["🤖 Node 21\n(Triagem)"]
+
+        N54["🤖 **Node 54** — IA Coleta Nova Data\nasst_HJH4P3fLV2w4rcYNMWASpHfX\n─────────────────────\nInforma consulta encontrada\nPergunta nova data\nPergunta novo período\n─────────────────────\n📤 Vars: nova_data, novo_periodo"]
+
+        N54 -->|"exit: JSON com nova_data"| N62
+        N54 -->|"54.3 — fail"| N24R
+
+        N62["🔵 **Node 62** — Mensagem\n_Um momento enquanto verifico\nos novos horários disponíveis..._ ⏳"]
+        N62 --> N63
+
+        N63["🌐 **Node 63** — API N8N\n─────────────────────\nevento: verificacao\ntelefone: {{ powerzap_phone }}\ndata_iso: {{ gpt:nova_data }}\nperiodo: {{ gpt:novo_periodo }}\n─────────────────────\nResposta: success_reagendamento,\nnovos_horarios_disponiveis"]
+
+        N63 -->|"63.1 — success"| N66
+        N63 -->|"63.2 — fail"| N24R
+
+        N66["🤖 **Node 66** — IA Horários (Reagendamento)\nasst_AqxRlWWcFPUds3wEudBRTokR\n─────────────────────\nApresenta novos horários\nInterpreta escolha do paciente\n📤 Vars: horario_escolhido_reagendamento"]
+
+        N66 --> N67
+
+        N67["🌐 **Node 67** — API N8N\n─────────────────────\nevento: reagendamento\ntelefone: {{ powerzap_phone }}\ncalendar_id: {{ api:calendar_id_reagendamento }}\nevent_id: {{ api:event_id_reagendamento }}\nnova_data_iso: {{ gpt:nova_data }}\nhorario_consulta: {{ gpt:horario_escolhido_reagendamento }}\n─────────────────────\n✅ Atualiza evento no Google Calendar"]
+
+        N67 -->|"67.1 — success"| N70
+        N67 -->|"67.2 — erro"| N24R
+
+        N70{"🔀 **Node 70**\nReagendamento OK?"}
+        N70 -->|"70.1 — true"| N68
+        N70 -->|"70.2 — false"| N71
+
+        N68["🤖 **Node 68** — IA Confirmação\ngpt-4o-mini\n─────────────────────\nGera mensagem de confirmação\ndo reagendamento"]
+        N68 --> N69([🔴 Node 69 — END])
+
+        N71["🔵 **Node 71** — Mensagem\n_Identificamos uma instabilidade\nano reagendamento. Encaminhando\npara um atendente._"]
+        N71 --> HANDOVER_R["👤 Node 74/75\nTransfer para atendente"]
+
+        N24R["🔵 **Node 24** — Fallback\n_Instabilidade pontual_"] --> HANDOVER_R
+    end
+
+    style N42 fill:#c17c00,color:#fff
+    style N47 fill:#c17c00,color:#fff
+    style N51 fill:#c17c00,color:#fff
+    style N61 fill:#c17c00,color:#fff
+    style N63 fill:#c17c00,color:#fff
+    style N67 fill:#c17c00,color:#fff
+    style N40 fill:#4a0080,color:#fff
+    style N54 fill:#4a0080,color:#fff
+    style N66 fill:#4a0080,color:#fff
+    style N68 fill:#4a0080,color:#fff
+    style N24C fill:#7a0000,color:#fff
+    style N24R fill:#7a0000,color:#fff
+    style N71 fill:#7a0000,color:#fff
+```
+
+---
+
+## 🟦 Fluxo 3 — Tirar Dúvidas
+
+```mermaid
+flowchart TD
+    START([🟢 3.3 Saber mais sobre a Clínica]) --> N72
+
+    N72["🤖 **Node 72** — IA Consultiva\nasst_uWgjpce7lr8nTKrIK8Aj3vxA\n──────────────────────────────\nResponde dúvidas usando a\nbase de conhecimento interna\n\nTópicos cobertos:\n• Endereço e localização\n• Horários de funcionamento\n• Especialidades e tratamentos\n• Convênios e pagamento\n• Valores (política: só presencial)\n• Links e redes sociais\n\nDetecta intenção do paciente\n──────────────────────────────\n📤 Vars: intencao_detectada\nlimite: 50 interações"]
+
+    N72 -->|"exit: saída natural"| N73
+    N72 -->|"72.1 — reiniciar"| MENU["📋 → Menu Principal"]
+    N72 -->|"72.2 — fail"| END87([🔴 Node 87 — END])
+    N72 -->|"72.3 — volta menu"| MENU
+
+    N73{"🔀 **Node 73**\nintencao_detectada?"}
+
+    N73 -->|"agendamento"| AGENDAR["🟦 → Fluxo Agendamento\nNode 39"]
+    N73 -->|"cancelamento"| CANCELAR["🟦 → Fluxo Cancelar\nNode 44"]
+    N73 -->|"reagendamento"| REAGENDAR["🟦 → Fluxo Reagendar\nNode 50"]
+    N73 -->|"sair"| END87
+    N73 -->|"none (sem intenção clara)"| MENU
+
+    style N72 fill:#4a0080,color:#fff
+    style N73 fill:#1e3a5f,color:#fff
+```
+
+---
+
+## 🟦 Fluxo 4 — Falar com a Recepção
+
+```mermaid
+flowchart TD
+    START([🟢 3.4 Falar com a Recepção]) --> N97
+
+    N97["🤖 **Node 97** — IA Recepção\nasst_uWgjpce7lr8nTKrIK8Aj3vxA\n──────────────────────────────\nFornece contato da recepção\nResponde dúvidas adicionais\nVerifica se paciente quer agendar\nDetecta intenção\n──────────────────────────────\n📤 Vars: redirecionamento\nlimite: 50 interações"]
+
+    N97 -->|"exit natural"| N98
+    N97 -->|"97.1 — voltar menu"| MENU["📋 → Menu Principal"]
+    N97 -->|"97.2 — encerrar"| END86([🔴 Node 86 — END])
+
+    N98{"🔀 **Node 98**\nredirecionamento = atendente?"}
+
+    N98 -->|"98.1 — atendente"| HANDOVER
+    N98 -->|"98.2 — none"| N73
+
+    N73{"🔀 **Node 73**\nintencao_detectada?"}
+    N73 -->|"agendamento"| AGENDAR["🟦 → Fluxo Agendamento\nNode 39"]
+    N73 -->|"cancelamento"| CANCELAR["🟦 → Fluxo Cancelar\nNode 44"]
+    N73 -->|"reagendamento"| REAGENDAR["🟦 → Fluxo Reagendar\nNode 50"]
+    N73 -->|"sair"| END87([🔴 Node 87 — END])
+    N73 -->|"none"| MENU
+
+    HANDOVER["🤖 **Node 74** — IA Handover\ngpt-4 · sendAsWhisper = true\n──────────────────────────────\nGera resumo INTERNO da conversa\npara o atendente humano\n(não visível ao paciente)"]
+
+    HANDOVER --> N75
+    N75(["👤 **Node 75** — TRANSFER\n──────────────────────────────\nTransferência para atendente\nuser ID: 134031"])
+
+    style N97 fill:#4a0080,color:#fff
+    style N74 fill:#2a2a2a,color:#fff
+    style HANDOVER fill:#2a2a2a,color:#fff
+    style N75 fill:#003366,color:#fff
+```
+
+---
+
+## 🌐 Mapa das Chamadas N8N
+
+```mermaid
+flowchart LR
+    PB["PowerBot\nBitrix24"]
+
+    subgraph N8N ["N8N — /webhook/tool_agendamento"]
+        VA["evento:\nverificar_evento_id\n──────────────────\nBusca agendamento\npelo telefone do paciente"]
+        VC["evento:\nverificacao\n──────────────────\nRetorna horários\ndisponíveis no dia"]
+        AG["evento:\nagendamento\n──────────────────\nCria evento no\nGoogle Calendar"]
+        CA["evento:\ncancelamento\n──────────────────\nCria evento em\n'Cancelamentos'\nDeleta original"]
+        RE["evento:\nreagendamento\n──────────────────\nAtualiza evento no\nGoogle Calendar"]
+        DB["evento:\nget_data_base\n──────────────────\nRetorna data/hora\natual do servidor"]
+    end
+
+    PB -->|"Nodes 42, 51, 93"| VA
+    PB -->|"Nodes 9, 63"| VC
+    PB -->|"Node 33"| AG
+    PB -->|"Node 47"| CA
+    PB -->|"Node 67"| RE
+    PB -->|"Nodes 60, 61"| DB
+
+    N8N -->|"Resposta JSON"| PB
+
+    style PB fill:#0052CC,color:#fff
+    style VA fill:#c17c00,color:#fff
+    style VC fill:#c17c00,color:#fff
+    style AG fill:#1a472a,color:#fff
+    style CA fill:#7a0000,color:#fff
+    style RE fill:#563a00,color:#fff
+    style DB fill:#333,color:#fff
+```
+
+---
+
+> ⚠️ **Bugs identificados no fluxo atual:**
+> - Nodes 42, 47 usam telefone hardcoded `5561999887766` em vez de `{{conversation:powerzap_phone}}`
+> - Nodes 51, 63, 67, 93 usam telefone hardcoded `5561999887777`
+> - **Node 67** aponta para `/webhook-test/` — ambiente de testes em vez de produção
+> - **Node 94** verifica `existe_agendamento` mas Node 93 salva como `existe_agendamento_reagendamento`

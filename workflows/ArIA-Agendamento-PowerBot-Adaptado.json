@@ -1,0 +1,247 @@
+{
+  "name": "ArIA-Agendamento-PowerBot-Adaptado",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "agenda-clinica",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "id": "WebhookAgenda",
+      "name": "Webhook Agenda",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "string": [
+            {
+              "value1": "={{$json.body.acao}}",
+              "operation": "equal",
+              "value2": "agendar"
+            },
+            {
+              "value1": "={{$json.body.acao}}",
+              "operation": "equal",
+              "value2": "cancelar"
+            },
+            {
+              "value1": "={{$json.body.acao}}",
+              "operation": "equal",
+              "value2": "buscar_horarios"
+            }
+          ]
+        }
+      },
+      "id": "SwitchAcao",
+      "name": "Switch Ação",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "getAll",
+        "calendar": "primary",
+        "returnAll": true
+      },
+      "id": "VerificarEvento",
+      "name": "Verificar Evento",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        700,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": "primary",
+        "summary": "={{`Consulta - ${$json.body.telefone}`}}",
+        "start": "={{$json.body.data_inicio}}",
+        "end": "={{$json.body.data_fim}}"
+      },
+      "id": "CriarEvento",
+      "name": "Criar Evento",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        950,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "delete",
+        "calendar": "primary",
+        "eventId": "={{$json.body.event_id}}"
+      },
+      "id": "CancelarEvento",
+      "name": "Cancelar Evento",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "operation": "getAvailability",
+        "calendar": "primary",
+        "timeMin": "={{$json.body.data_inicio}}",
+        "timeMax": "={{$json.body.data_fim}}"
+      },
+      "id": "BuscarDisponibilidade",
+      "name": "Buscar Disponibilidade",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        700,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Você organiza horários disponíveis para uma clínica odontológica."
+          },
+          {
+            "role": "user",
+            "content": "Organize estes horários disponíveis em formato amigável:\n{{$json}}"
+          }
+        ]
+      },
+      "id": "OrganizarHorariosGPT",
+      "name": "Organizar Horários GPT",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        950,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "responseBody": "={{ { success: true, response: $json.choices?.[0]?.message?.content || 'Operação realizada com sucesso.' } }}"
+      },
+      "id": "ResponderWebhook",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Agenda": {
+      "main": [
+        [
+          {
+            "node": "Switch Ação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Ação": {
+      "main": [
+        [
+          {
+            "node": "Verificar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cancelar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar Disponibilidade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Evento": {
+      "main": [
+        [
+          {
+            "node": "Criar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Evento": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelar Evento": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Disponibilidade": {
+      "main": [
+        [
+          {
+            "node": "Organizar Horários GPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organizar Horários GPT": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

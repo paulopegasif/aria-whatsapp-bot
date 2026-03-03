@@ -1,0 +1,909 @@
+{
+  "botName": "Ar.Ia - Agendamento Clínica",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "initialNode",
+      "data": {},
+      "position": {
+        "x": -1047.468833862505,
+        "y": -94.83504153000686
+      },
+      "positionAbsolute": {
+        "x": -1047.468833862505,
+        "y": -94.83504153000686
+      },
+      "width": 224,
+      "height": 242
+    },
+    {
+      "id": "3",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Olá 👋 Seja bem-vindo(a) ao canal de  Agendamento da Clínica Aria!\n\nComo podemos te ajudar hoje?",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": null,
+        "customMessage": null,
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "options": [
+          {
+            "id": "3.1",
+            "content": "Agendar consulta",
+            "keywords": []
+          },
+          {
+            "id": "3.2",
+            "content": "Cancelar consulta",
+            "keywords": []
+          },
+          {
+            "id": "3.3",
+            "content": "Reagendar consulta",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": -722.9969620393194,
+        "y": -174.1120230420447
+      },
+      "positionAbsolute": {
+        "x": -722.9969620393194,
+        "y": -174.1120230420447
+      },
+      "width": 278,
+      "height": 637
+    },
+    {
+      "id": "4",
+      "type": "questionNode",
+      "data": {
+        "type": "open",
+        "message": "Perfeito! Vamos agendar sua consulta 😊\n\nQual é o seu nome completo?",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": "nome_completo",
+        "customMessage": null,
+        "formatType": "topics",
+        "useWhatsAppButtons": false,
+        "options": []
+      },
+      "position": {
+        "x": 109.8327043157279,
+        "y": -98.24675470248053
+      },
+      "positionAbsolute": {
+        "x": 109.8327043157279,
+        "y": -98.24675470248053
+      },
+      "width": 278,
+      "height": 253
+    },
+    {
+      "id": "5",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Qual especialidade você deseja agendar?\n",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": "especialidade",
+        "customMessage": null,
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "options": [
+          {
+            "id": "5.1",
+            "content": "Clínica Geral",
+            "keywords": []
+          },
+          {
+            "id": "5.2",
+            "content": "Prótese",
+            "keywords": []
+          },
+          {
+            "id": "5.3",
+            "content": "Ortodontia",
+            "keywords": []
+          },
+          {
+            "id": "5.4",
+            "content": "Implantes",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": 448.7922701434237,
+        "y": -319.9831881150325
+      },
+      "positionAbsolute": {
+        "x": 448.7922701434237,
+        "y": -319.9831881150325
+      },
+      "width": 278,
+      "height": 696
+    },
+    {
+      "id": "6",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 278.3926830389025,
+        "y": 813.9981069519458
+      },
+      "positionAbsolute": {
+        "x": 278.3926830389025,
+        "y": 813.9981069519458
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "7",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Qual dia você prefere?",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": "data_predefinida",
+        "customMessage": "",
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "options": [
+          {
+            "id": "7.1",
+            "content": "Hoje",
+            "keywords": []
+          },
+          {
+            "id": "7.2",
+            "content": "Amanhã",
+            "keywords": []
+          },
+          {
+            "id": "7.3",
+            "content": "Depois de amanhã",
+            "keywords": []
+          },
+          {
+            "id": "7.4",
+            "content": "Escolher outra data",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": 788.1560937359179,
+        "y": -381.3563994298772
+      },
+      "positionAbsolute": {
+        "x": 788.1560937359179,
+        "y": -381.3563994298772
+      },
+      "width": 278,
+      "height": 696
+    },
+    {
+      "id": "8",
+      "type": "questionNode",
+      "data": {
+        "type": "open",
+        "message": "Digite a data desejada no formato:\nDD/MM\nExemplo: 18/02",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": "data_digitada",
+        "customMessage": null,
+        "formatType": "topics",
+        "useWhatsAppButtons": false,
+        "options": []
+      },
+      "position": {
+        "x": 1294.770300810885,
+        "y": -473.4368288265082
+      },
+      "positionAbsolute": {
+        "x": 1294.770300810885,
+        "y": -473.4368288265082
+      },
+      "width": 278,
+      "height": 253
+    },
+    {
+      "id": "9",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/data-validation",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"data_agendamento\": \"{{captured:data_predefinida}}\"\n}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success_api",
+            "path": "success"
+          },
+          {
+            "id": 2,
+            "name": "error_code_api",
+            "path": "error_code"
+          },
+          {
+            "id": 3,
+            "name": "message_api",
+            "path": "message"
+          },
+          {
+            "id": 4,
+            "name": "data_iso",
+            "path": "data_iso"
+          },
+          {
+            "id": 5,
+            "name": "data_formatada",
+            "path": "data_formatada"
+          }
+        ]
+      },
+      "position": {
+        "x": 1435.364549663207,
+        "y": -1000.909919338314
+      },
+      "positionAbsolute": {
+        "x": 1435.364549663207,
+        "y": -1000.909919338314
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "10",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Perfeito! Data selecionada: {{api:data_formatada}} 😊\n\nAgora escolha o período:",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": "periodo_agendamento",
+        "customMessage": null,
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "options": [
+          {
+            "id": "10.1",
+            "content": "Manhã",
+            "keywords": []
+          },
+          {
+            "id": "10.2",
+            "content": "Tarde",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": 2495.667251930417,
+        "y": -647.6957094764714
+      },
+      "positionAbsolute": {
+        "x": 2495.667251930417,
+        "y": -647.6957094764714
+      },
+      "width": 278,
+      "height": 578
+    },
+    {
+      "id": "11",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Um momento enquanto verifico os horários disponíveis para o dia escolhido... ⏳\n",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 3362.770206332343,
+        "y": -563.326771548722
+      },
+      "positionAbsolute": {
+        "x": 3362.770206332343,
+        "y": -563.326771548722
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "13",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "13.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success_api}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "13.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success_api}}",
+            "secondValue": "false"
+          },
+          {
+            "id": "13.3",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2511.604840843688,
+        "y": -1374.661674279143
+      },
+      "positionAbsolute": {
+        "x": 2511.604840843688,
+        "y": -1374.661674279143
+      },
+      "width": 278,
+      "height": 379
+    },
+    {
+      "id": "14",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "Você é o assistente virtual da Clínica Aria.\n\nRecebeu a seguinte mensagem de erro do sistema interno de agendamento:\n\n{{api:message_api}}\n\nSua função é:\n\n- Reformular essa mensagem de forma mais natural e acolhedora.\n- Manter o texto curto (máximo 3 linhas).\n- Incentivar o paciente a escolher outra data.\n- Usar um tom simpático, profissional e humano.\n- Não inventar informações.\n- Não mencionar sistema, API ou erro técnico.\n\nResponda apenas com a mensagem final para o paciente.\n",
+        "AIId": "gpt-4o-mini",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 3127.128926602079,
+        "y": -1697.092558805797
+      },
+      "positionAbsolute": {
+        "x": 3127.128926602079,
+        "y": -1697.092558805797
+      },
+      "width": 278,
+      "height": 534
+    },
+    {
+      "id": "15",
+      "type": "messageNode",
+      "data": {
+        "messageData": "RETORNO DA API:\nsuccess: {{api:success_api}}\nError code: {{api:error_code_api}}\nMessage: {{api:message_api}}\nData ISO: {{api:data_iso}}\nData Formatada: {{api:data_formatada}}\n\nData Escolhida: {{captured:data_predefinida}}",
+        "sendAsWhisper": true
+      },
+      "position": {
+        "x": 2077.978013577004,
+        "y": -1392.459434087575
+      },
+      "positionAbsolute": {
+        "x": 2077.978013577004,
+        "y": -1392.459434087575
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "16",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/data-validation",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"data_agendamento\": \"{{captured:data_digitada_normalizada}}\"\n}\n",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success_api",
+            "path": "success"
+          },
+          {
+            "id": 2,
+            "name": "error_code_api",
+            "path": "error_code"
+          },
+          {
+            "id": 3,
+            "name": "message_api",
+            "path": "message"
+          },
+          {
+            "id": 4,
+            "name": "data_iso",
+            "path": "data_iso"
+          },
+          {
+            "id": 5,
+            "name": "data_formatada",
+            "path": "data_formatada"
+          }
+        ]
+      },
+      "position": {
+        "x": 2085.638125573219,
+        "y": -447.5852677162023
+      },
+      "positionAbsolute": {
+        "x": 2085.638125573219,
+        "y": -447.5852677162023
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "18",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "question",
+        "prompt": "Você receberá uma data digitada por um usuário brasileiro.\n\nConverta essa data para o formato DD/MM.\n\nRegras:\n- Use apenas números.\n- Retorne somente no formato DD/MM.\n- Não escreva texto adicional.\n- Se não for possível identificar a data, retorne apenas: INVALIDO.\n\nData digitada:\n{{captured:data_digitada}}\n",
+        "AIId": "gpt-4o-mini",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "data_digitada_normalizada",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 1712.30149105365,
+        "y": -492.2372225815196
+      },
+      "positionAbsolute": {
+        "x": 1712.30149105365,
+        "y": -492.2372225815196
+      },
+      "width": 278,
+      "height": 575
+    },
+    {
+      "id": "19",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook-test/buscar-horarios",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"data_iso\": \"2026-03-11\",\n  \"periodo\": \"manha\"\n}",
+        "apiVariables": []
+      },
+      "position": {
+        "x": 4016.942178428537,
+        "y": -546.1255093316861
+      },
+      "positionAbsolute": {
+        "x": 4016.942178428537,
+        "y": -546.1255093316861
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "20",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 4508.201041368899,
+        "y": -563.3430207727351
+      },
+      "positionAbsolute": {
+        "x": 4508.201041368899,
+        "y": -563.3430207727351
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "21",
+      "type": "apiNode",
+      "data": {
+        "method": "GET",
+        "url": "https://n8n.clinicaaria.com.br/webhook-test/verificar-consulta",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"telefone\": \"{{conversation:powerzap_phone}}\"\n}",
+        "apiVariables": []
+      },
+      "position": {
+        "x": -398.6937709922295,
+        "y": 66.55980904571359
+      },
+      "positionAbsolute": {
+        "x": -398.6937709922295,
+        "y": 66.55980904571359
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "22",
+      "type": "messageNode",
+      "data": {
+        "messageData": "RETORNO DO SISTEMA",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": -239.9982423926725,
+        "y": 497.7879787866544
+      },
+      "positionAbsolute": {
+        "x": -239.9982423926725,
+        "y": 497.7879787866544
+      },
+      "width": 278,
+      "height": 250
+    }
+  ],
+  "edges": [
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "5",
+      "source": "4",
+      "sourceHandle": null,
+      "target": "5"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "7",
+      "source": "5",
+      "sourceHandle": "5.1",
+      "target": "7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "8",
+      "source": "7",
+      "sourceHandle": "7.4",
+      "target": "8"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-55.2-7",
+      "source": "5",
+      "sourceHandle": "5.2",
+      "target": "7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-55.3-7",
+      "source": "5",
+      "sourceHandle": "5.3",
+      "target": "7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-55.4-7",
+      "source": "5",
+      "sourceHandle": "5.4",
+      "target": "7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "11",
+      "source": "10",
+      "sourceHandle": "10.1",
+      "target": "11"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1010.2-11",
+      "source": "10",
+      "sourceHandle": "10.2",
+      "target": "11"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1-3",
+      "source": "1",
+      "sourceHandle": null,
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1313.1-10",
+      "source": "13",
+      "sourceHandle": "13.1",
+      "target": "10"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "14",
+      "source": "13",
+      "sourceHandle": "13.2",
+      "target": "14"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-99.2-14",
+      "source": "9",
+      "sourceHandle": "9.2",
+      "target": "14"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1414-7",
+      "source": "14",
+      "sourceHandle": "14",
+      "target": "7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1313.3-14",
+      "source": "13",
+      "sourceHandle": "13.3",
+      "target": "14"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "15",
+      "source": "9",
+      "sourceHandle": "9.1",
+      "target": "15"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-15-13",
+      "source": "15",
+      "sourceHandle": null,
+      "target": "13"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1616.1-15",
+      "source": "16",
+      "sourceHandle": "16.1",
+      "target": "15"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1616.2-14",
+      "source": "16",
+      "sourceHandle": "16.2",
+      "target": "14"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-77.1-9",
+      "source": "7",
+      "sourceHandle": "7.1",
+      "target": "9"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-77.2-9",
+      "source": "7",
+      "sourceHandle": "7.2",
+      "target": "9"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-77.3-9",
+      "source": "7",
+      "sourceHandle": "7.3",
+      "target": "9"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "18",
+      "source": "8",
+      "sourceHandle": null,
+      "target": "18"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1818-16",
+      "source": "18",
+      "sourceHandle": "18",
+      "target": "16"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "19",
+      "source": "11",
+      "sourceHandle": null,
+      "target": "19"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "20",
+      "source": "19",
+      "sourceHandle": "19.1",
+      "target": "20"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-1919.2-20",
+      "source": "19",
+      "sourceHandle": "19.2",
+      "target": "20"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "21",
+      "source": "3",
+      "sourceHandle": "3.2",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-33.1-4",
+      "source": "3",
+      "sourceHandle": "3.1",
+      "target": "4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-33.3-21",
+      "source": "3",
+      "sourceHandle": "3.3",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-2121.2-6",
+      "source": "21",
+      "sourceHandle": "21.2",
+      "target": "6"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "22",
+      "source": "21",
+      "sourceHandle": "21.1",
+      "target": "22"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-22-6",
+      "source": "22",
+      "sourceHandle": null,
+      "target": "6"
+    }
+  ]
+}

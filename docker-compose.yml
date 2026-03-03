@@ -9,11 +9,41 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped
+    environment:
+      - TZ=America/Sao_Paulo
+      - N8N_DEFAULT_TIMEZONE=America/Sao_Paulo
+      - NODE_FUNCTION_ALLOW_EXTERNAL=ioredis
+    networks:
+      - aria-network
+  chromadb:
+    image: chromadb/chroma
+    container_name: aria-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/.chroma
+    networks:
+      - aria-network
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-aria
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
       - aria-network
 
+
+
 volumes:
   n8n_data:
+  chroma_data:
+  redis_data:
+
 
 
 networks:

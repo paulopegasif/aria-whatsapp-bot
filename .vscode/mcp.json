@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "n8n-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "supergateway",
+        "--sse",
+        "http://localhost:55000/mcp/266cff25-4ddb-4c02-8b16-bfce5cd5f6b3",
+        "--oauth2Bearer",
+        "${input:n8nMcpAccessToken}"
+      ]
+    }
+  },
+  "inputs": [
+    {
+      "id": "n8nMcpAccessToken",
+      "type": "promptString",
+      "description": "Token de acesso MCP do n8n",
+      "password": true
+    }
+  ]
+}

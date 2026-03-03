@@ -1,0 +1,2999 @@
+{
+  "botName": "Ar.Ia - Agendamento Clínica",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "initialNode",
+      "data": {},
+      "position": {
+        "x": -5003.243608724028,
+        "y": -732.0586602975059
+      },
+      "width": 224,
+      "height": 242,
+      "positionAbsolute": {
+        "x": -5003.243608724028,
+        "y": -732.0586602975059
+      }
+    },
+    {
+      "id": "3",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Olá 👋 Seja bem-vindo(a) ao canal de  atendimento da Clínica Aria!\n\nEscolha uma das opções abaixo:",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": null,
+        "customMessage": "Por favor, escolha uma das opções listadas.",
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "options": [
+          {
+            "id": "3.1",
+            "content": "Quero agendar uma consulta",
+            "keywords": []
+          },
+          {
+            "id": "3.2",
+            "content": "Já tenho um agendamento (cancelar ou reagendar)",
+            "keywords": []
+          },
+          {
+            "id": "3.3",
+            "content": "Quero saber mais sobre a Clínica ou Tratamentos",
+            "keywords": []
+          },
+          {
+            "id": "3.4",
+            "content": "Falar com a Recepção",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": -3322.65982842766,
+        "y": -562.853567067383
+      },
+      "width": 278,
+      "height": 750,
+      "positionAbsolute": {
+        "x": -3322.65982842766,
+        "y": -562.853567067383
+      }
+    },
+    {
+      "id": "9",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"verificacao\",\n  \"telefone\": \"5561999887766\",\n  \"data_iso\": \"{{gpt:data_iso}}\",\n  \"periodo\": \"{{gpt:periodo}}\"\n}",
+        "apiVariables": [
+          {
+            "id": 8,
+            "name": "success",
+            "path": "success"
+          },
+          {
+            "id": 9,
+            "name": "horarios_disponiveis",
+            "path": "horarios_disponiveis"
+          }
+        ]
+      },
+      "position": {
+        "x": 1397.612790443583,
+        "y": -1231.20552492074
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 1397.612790443583,
+        "y": -1231.20552492074
+      }
+    },
+    {
+      "id": "11",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Um momento enquanto verifico os horários disponíveis para o dia escolhido... ⏳\n",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 1020.104537708952,
+        "y": -1235.270857871092
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 1020.104537708952,
+        "y": -1235.270857871092
+      }
+    },
+    {
+      "id": "21",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nYou are in the scheduling triage stage.\nThe flow is strictly sequential and deterministic.\n\nYou must complete the following steps in exact order.\nYou cannot skip, merge or reorder steps.\n\n--------------------------------------------------\nMANDATORY STEP ORDER\n\n1) Full name validation\n2) Date of birth + age validation\n3) Strategic question about knowing the clinic\n4) Chief complaint extraction + treatment definition\n5) Desired appointment date validation\n6) Period selection\n\nYou may only advance after the current step is fully validated.\n\n--------------------------------------------------\nSTEP 1 — FULL NAME VALIDATION\n\nRequest full name.\n\nValidation rules:\n- Must contain at least two words separated by space.\n- Each word must have at least 2 characters.\n- Do not accept initials, abbreviations, nicknames or generic words.\n\nIf invalid:\nRequest full name again.\n\nAfter valid:\n- Store in \"nome_completo\"\n- Extract first name for conversational use\n\n--------------------------------------------------\nSTEP 2 — DATE OF BIRTH + AGE VALIDATION\n\nAccept multiple date formats.\nConvert to YYYY-MM-DD.\nStore in \"data_nascimento\".\n\nCalculate age using {{api:data_atual_timestamp}}.\n\nIf age < 16:\n- Store numeric value in \"idade_paciente\"\n- Stop triage\n- Provide minor instruction message\n- Terminate execution\n\nIf age ≥ 16:\nProceed.\n\n--------------------------------------------------\nSTEP 3 — STRATEGIC QUESTION\n\nAsk if the patient already knows the clinic or wants a brief explanation.\n\nIf explanation is requested:\nProvide brief institutional explanation.\nThen proceed.\n\n--------------------------------------------------\nSTEP 4 — CHIEF COMPLAINT + TREATMENT DEFINITION\n\nAsk for main complaint.\n\nRules:\n- Summarize clinically\n- Store in \"queixa_principal\"\n- Define best treatment automatically\n- Store in \"tipo_tratamento\"\n\nNever ask which treatment they want.\n\n--------------------------------------------------\nSTEP 5 — DESIRED DATE VALIDATION\n\nRequest desired date.\n\nSTRICT VALIDATION:\n\n1) Convert to YYYY-MM-DD.\n2) Extract current date from {{api:data_atual_timestamp}}.\n3) Split both dates into year, month and day.\n4) Compare year, month and day separately.\n\nReject immediately if:\n- Year is less than current year\n- Same year and month less than current month\n- Same year and month and day less than current day\n\nIf invalid:\nRequest new date.\nDo not proceed.\n\nOnly accept if date is today or future.\nStore in \"data_iso\".\n\n--------------------------------------------------\nSTEP 6 — PERIOD SELECTION\n\nAsk for:\n- manha\n- tarde\n\nStore in \"periodo\".\n\nIf ambiguous:\nClarify.\n\n--------------------------------------------------\nEXIT HANDLING\n\nIf patient indicates desire to end:\nInstruct them to type \"sair\".\nOnly if they type \"sair\":\nReturn only:\nSAIR\n\n--------------------------------------------------\nFINALIZATION RULE\n\nWhen all steps are validated:\n\nDo not send any message to the patient.\n\nReturn only the technical JSON:\n\n{\n  \"nome_completo\": \"\",\n  \"data_nascimento\": \"\",\n  \"data_iso\": \"\",\n  \"periodo\": \"\",\n  \"tipo_tratamento\": \"\",\n  \"queixa_principal\": \"\"\n}\n\nImmediately terminate execution.",
+        "AIId": "",
+        "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
+        "interactionsLimit": null,
+        "exitKeyword": "sair",
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "nome_completo",
+            "description": "Nome completo do cliente que você está atendendo"
+          },
+          {
+            "id": 2,
+            "name": "data_iso",
+            "description": "Data no padrão ISO da consulta que o cliente que você está atendendo quer marcar"
+          },
+          {
+            "id": 3,
+            "name": "periodo",
+            "description": "Periodo do dia no qual o cliente que você está atendendo quer marcar a consulta"
+          },
+          {
+            "id": 4,
+            "name": "data_formatada",
+            "description": "Data escolhida para a consulta, formatada no padrão brasileiro \"Dia/Mês/Ano\""
+          },
+          {
+            "id": 5,
+            "name": "tipo_tratamento",
+            "description": "Tipo de tratamento na qual o cliente deseja (ex: ortodontia, implante, prótese, limpeza, avaliação, etc.)"
+          },
+          {
+            "id": 6,
+            "name": "queixa_principal",
+            "description": "Qual dor, desconforto ou necessidade o paciente está sentindo em relação à sua saúde bucal"
+          },
+          {
+            "id": 7,
+            "name": "data_nascimento",
+            "description": "Data de Nascimento do cliente que você está atendendo"
+          },
+          {
+            "id": 8,
+            "name": "idade_paciente",
+            "description": "Idade do paciente que você está atendendo (somente o valor numérico)"
+          }
+        ],
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 3
+        }
+      },
+      "position": {
+        "x": 264.9836107050805,
+        "y": -1075.531246116412
+      },
+      "width": 278,
+      "height": 698,
+      "positionAbsolute": {
+        "x": 264.9836107050805,
+        "y": -1075.531246116412
+      }
+    },
+    {
+      "id": "24",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Tivemos uma instabilidade pontual no sistema de agendamento.\nPara não atrasar seu atendimento, vou te encaminhar agora para um de nossos consultores dar continuidade imediatamente.",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 5232.517682254955,
+        "y": -1177.417239893406
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 5232.517682254955,
+        "y": -1177.417239893406
+      }
+    },
+    {
+      "id": "26",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nFull Name: {{gpt:nome_completo}}\nFirst Name: {{gpt:primeiro_nome}}\nSelected Date (ISO): {{gpt:data_iso}}\nSelected Period: {{gpt:periodo}}\nAvailable Times: {{api:horarios_disponiveis}}\n\nYour task in this stage:\n\n- Present available time slots.\n- Interpret the patient’s selection deterministically.\n- Confirm a valid time.\n- Handle date/period change requests.\n- Terminate immediately after confirming a valid time.\n\n--------------------------------------------------\nAVAILABLE TIMES RULE\n\nYou may ONLY accept times that exist EXACTLY in the received list.\n\nIf a time does not exactly match an item in the list after full normalization,\nit must be rejected.\n\n--------------------------------------------------\nTIME NORMALIZATION PROCESS (MANDATORY)\n\nBefore validating any time written by the patient:\n\nSTEP 1 — Convert written time into numeric hour and minute.\n\nExamples:\n- \"cinco e meia\" → 5:30\n- \"cinco horas\" → 5:00\n- \"dez e meia\" → 10:30\n- \"onze horas\" → 11:00\n\nSTEP 2 — Apply period context rule:\n\nIf periodo == \"tarde\":\n- If hour is between 1 and 11 → add 12.\n\nExamples:\n- 5:30 (tarde) → 17:30\n- 3:00 (tarde) → 15:00\n- 11:00 (tarde) → 23:00 (only valid if exists in list)\n\nIf periodo == \"manha\":\n- Do not modify hour.\n\nSTEP 3 — Format strictly as HH:MM (two digits).\n\nSTEP 4 — Validate exact match against Available Times list.\n\nIf not exact → reject.\n\nNever approximate.\nNever map to closest time.\n\n--------------------------------------------------\nSELECTION RULES\n\nCASE 1 — Patient chooses a number:\nValidate by list index.\n\nCASE 2 — Patient writes a time:\nApply full normalization process.\n\nCASE 3 — Ambiguous response:\nAsk the patient to choose by number.\n\n--------------------------------------------------\nEMPTY LIST RULE\n\nIf Available Times is empty:\n\nRespond only:\n\n\"[Primeiro Nome], infelizmente não há horários disponíveis para essa data no período selecionado.\n\nVocê pode me informar uma nova data para verificarmos?\"\n\nDo not add anything else.\n\n--------------------------------------------------\nDATE OR PERIOD CHANGE\n\nIf the patient wants to change date or period:\n\nRespond:\n\n\"[Primeiro Nome], para alterar a data ou o período, preciso redirecionar você para a etapa de triagem para verificarmos novamente as disponibilidades.\n\nPosso redirecionar?\"\n\nIf patient confirms clearly:\n\nStore internally on variable {{gpt:redirecionamento}}:\n\nredirecionamento = \"triagem\"\n\nRespond only:\n\"Perfeito. Vou redirecionar você agora.\"\n\nTerminate immediately.\n\n--------------------------------------------------\nCONFIRMATION FORMAT (MANDATORY)\n\nWhen a valid time is selected:\n\nRespond exactly:\n\n\"Perfeito, [Primeiro Nome].\nVocê escolheu o horário das HH:MM.\n\nEstou dando continuidade ao seu agendamento agora.\"\n\nAfter sending this message:\nTerminate execution immediately.\nDo not continue conversation.\nDo not ask questions.",
+        "AIId": "",
+        "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "horario_escolhido",
+            "description": "Horário que o cliente na qual você está atendendo escolheu para marcar a consulta"
+          }
+        ],
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 2185.17074777127,
+        "y": -2621.613604509602
+      },
+      "width": 278,
+      "height": 637,
+      "positionAbsolute": {
+        "x": 2185.17074777127,
+        "y": -2621.613604509602
+      }
+    },
+    {
+      "id": "27",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Por favor, confirme os dados da sua consulta:\n\nNome: {{gpt:nome_completo}}\n☎️ Telefone: {{conversation:powerzap_phone}}\n📅 Data: {{gpt:data_formatada}}\n🕒 Horário: {{gpt:horario_escolhido}}  \n🦷 Período: {{gpt:periodo}} \n\nEstá tudo correto?",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": null,
+        "customMessage": "Desculpe, responda somente com uma das opções listadas acima.",
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 3
+        },
+        "options": [
+          {
+            "id": "27.1",
+            "content": "SIM",
+            "keywords": []
+          },
+          {
+            "id": "27.2",
+            "content": "NÃO",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": 3143.068128224413,
+        "y": -2548.322952130838
+      },
+      "width": 278,
+      "height": 632,
+      "positionAbsolute": {
+        "x": 3143.068128224413,
+        "y": -2548.322952130838
+      }
+    },
+    {
+      "id": "29",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "29.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "29.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success}}",
+            "secondValue": "false"
+          },
+          {
+            "id": "29.3",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 1770.34674060011,
+        "y": -1238.647193305529
+      },
+      "width": 278,
+      "height": 379,
+      "positionAbsolute": {
+        "x": 1770.34674060011,
+        "y": -1238.647193305529
+      }
+    },
+    {
+      "id": "30",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Infelizmente essa data não está disponível.",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": -973.4712985233145,
+        "y": -2329.670260438688
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": -973.4712985233145,
+        "y": -2329.670260438688
+      }
+    },
+    {
+      "id": "32",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Certo, me diga qual informação você quer alterar?",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 1307.623354764527,
+        "y": -102.315417609234
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 1307.623354764527,
+        "y": -102.315417609234
+      }
+    },
+    {
+      "id": "33",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"agendamento\",\n  \"nome_completo\": \"{{gpt:nome_completo}}\",\n  \"telefone\": \"5561999887766\",\n  \"data_iso\": \"{{gpt:data_iso}}\",\n  \"horario_consulta\": \"{{gpt:horario_escolhido}}\",\n  \"tipo_tratamento\": \"{{gpt:tipo_tratamento}}\",\n  \"queixa_principal\": \"{{gpt:queixa_principal}}\"\n}",
+        "apiVariables": [
+          {
+            "id": 8,
+            "name": "success_agendamento",
+            "path": "success"
+          },
+          {
+            "id": 9,
+            "name": "mensagem_api_n8n",
+            "path": "message"
+          },
+          {
+            "id": 11,
+            "name": "status_consulta",
+            "path": "status"
+          },
+          {
+            "id": 12,
+            "name": "nome_dentista_consulta",
+            "path": "summary"
+          }
+        ]
+      },
+      "position": {
+        "x": 3509.053103316297,
+        "y": -2584.807170834343
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 3509.053103316297,
+        "y": -2584.807170834343
+      }
+    },
+    {
+      "id": "34",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "34.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:status_consulta}}",
+            "secondValue": "confirmed"
+          },
+          {
+            "id": "34.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success_agendamento}}",
+            "secondValue": "false"
+          },
+          {
+            "id": "34.3",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 3855.424755987364,
+        "y": -2593.356646000885
+      },
+      "width": 278,
+      "height": 379,
+      "positionAbsolute": {
+        "x": 3855.424755987364,
+        "y": -2593.356646000885
+      }
+    },
+    {
+      "id": "36",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nThe attempt to create the appointment was not successful.\n\nAPI return message:\n{{api:mensagem_api_n8n}}\n\nOBJECTIVE\n\n- Inform the patient that the selected time could not be confirmed.\n- Maintain calm and professional tone.\n- Encourage selection of another available time.\n- Allow controlled redirection to a human attendant.\n- Allow controlled exit from the conversation.\n\n--------------------------------------------------\nPRIMARY RESPONSE\n\n1) Inform that the selected time could not be confirmed.\n2) Indicate that the time may have been recently occupied.\n3) Reinforce that other times are available.\n4) Invite the patient to choose another option.\n5) Keep the message concise and professional.\n6) Do not mention API, system or internal error.\n\n--------------------------------------------------\nHUMAN REDIRECTION CONTROL\n\nIf the patient demonstrates intention to:\n- Falar com atendente\n- Falar com humano\n- Falar com alguém da equipe\n- Preferir atendimento humano\n- Não continuar pelo automático\n\nYou must respond:\n\n\"Se preferir, você pode digitar a palavra 'atendente' que eu direciono você para nossa equipe.\"\n\nDo NOT redirect automatically.\n\nOnly if the patient types exactly:\n\natendente\n\nThen:\n\n1) Store internally:\n   {{gpt:redirecionamento}} = \"atendente\"\n\n2) Respond only:\n   \"Perfeito. Vou direcionar você agora para um atendente.\"\n\n3) Terminate execution immediately.\n\n--------------------------------------------------\nEXIT CONTROL\n\nIf the patient demonstrates intention to:\n- Sair\n- Encerrar\n- Finalizar\n- Não continuar\n\nYou must respond:\n\n\"Se você deseja encerrar o atendimento, por favor digite a palavra 'sair' para finalizarmos.\"\n\nOnly if the patient types exactly:\n\nsair\n\nThen:\n1) Terminate execution immediately.\n\n--------------------------------------------------\nCONSTRAINTS\n\n- Do not pressure.\n- Do not insist on automation.\n- Do not argue.\n- Do not explain internal logic.\n- Maximum 1 emoji if appropriate.\n- Keep conversation structured and controlled.",
+        "AIId": "",
+        "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
+        "interactionsLimit": null,
+        "exitKeyword": "sair",
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "redirecionamento",
+            "description": ""
+          }
+        ],
+        "failPath": false
+      },
+      "position": {
+        "x": 3853.841553023998,
+        "y": -1955.227201384444
+      },
+      "width": 278,
+      "height": 698,
+      "positionAbsolute": {
+        "x": 3853.841553023998,
+        "y": -1955.227201384444
+      }
+    },
+    {
+      "id": "37",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 5710.544351730309,
+        "y": -2435.090711620555
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": 5710.544351730309,
+        "y": -2435.090711620555
+      }
+    },
+    {
+      "id": "38",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 641.8991857101219,
+        "y": -562.611139666649
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": 641.8991857101219,
+        "y": -562.611139666649
+      }
+    },
+    {
+      "id": "39",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Olá, sou o responsável por agendar sua consulta 😊\n\n",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 6
+        }
+      },
+      "position": {
+        "x": -1264.655970417664,
+        "y": -968.8074447108154
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": -1264.655970417664,
+        "y": -968.8074447108154
+      }
+    },
+    {
+      "id": "40",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nThe system identified an existing appointment.\n\nData and time: {{api:data_hora_do_agendamento_cancelar}}\nSummary field: {{api:sumario_consulta_cancelar}}\n\nYou must extract:\n\n- Date in Brazilian format (DD/MM/AAAA)\n- Time (HH:MM)\n- First name of the patient\n- Name of the professional\n\n--------------------------------------------------\nOBJECTIVE\n\n1) Confirm that the correct appointment was located.\n2) Ask for the cancellation reason.\n3) Interpret and summarize the reason.\n4) Store the summary in:\n   motivo_cancelamento\n5) Confirm explicitly whether the patient truly wants to cancel.\n6) Only proceed after explicit confirmation.\n\n--------------------------------------------------\nSTEP 1 — CONFIRM APPOINTMENT\n\nFirst mandatory message:\n\n\"[Primeiro Nome], encontrei sua consulta agendada para o dia DD/MM/AAAA às HH:MM com [Nome do profissional].\n\nEstá correto?\"\n\nWait for confirmation.\n\n--------------------------------------------------\nSTEP 2 — REQUEST CANCELLATION REASON\n\nAfter confirmation, ask:\n\n\"Você poderia me informar o motivo do cancelamento?\"\n\nWait for response.\n\n--------------------------------------------------\nSTEP 3 — PROCESS MOTIVE\n\nWhen the patient responds:\n\n1) Interpret the meaning.\n2) Create a short professional summary.\n3) Store internally:\n   motivo_cancelamento = \"Resumo criado\"\n4) Respond with neutral empathy.\n\nExample tone:\n\"Entendo, [Primeiro Nome]. Obrigada por me avisar.\"\n\nDo not repeat the full reason.\nDo not add commentary.\n\n--------------------------------------------------\nSTEP 4 — FINAL CONFIRMATION\n\nAsk clearly:\n\n\"Você confirma que deseja cancelar essa consulta?\"\n\nWait for explicit confirmation.\n\n--------------------------------------------------\nIF PATIENT DESISTS\n\nIf the patient decides not to cancel:\n\nRespond:\n\n\"Perfeito, sua consulta permanece confirmada.\nQualquer coisa estou à disposição.\"\n\nTerminate normally.\nDo not store motive.\nDo not proceed.\n\n--------------------------------------------------\nFINAL EXECUTION TRIGGER\n\nOnly when the patient clearly confirms cancellation:\n\nEnsure that:\n- motivo_cancelamento is already stored.\n\nThen respond internally with:\n\nCONFIRMAR_CANCELAMENTO\n\nNothing else.\nNo punctuation.\nNo explanation.\nNo emojis.\n\nTerminate execution immediately.",
+        "AIId": "",
+        "assistantId": "asst_R106DbQu9AvR5Q90FeH2Urnc",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "motivo_cancelamento",
+            "description": ""
+          }
+        ],
+        "failPath": true,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 971.9309639808498,
+        "y": 658.1656190099931
+      },
+      "width": 278,
+      "height": 641,
+      "positionAbsolute": {
+        "x": 971.9309639808498,
+        "y": 658.1656190099931
+      }
+    },
+    {
+      "id": "42",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook-test/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"verificar_evento_id\",\n  \"telefone\": \"5561999887766\"\n}",
+        "apiVariables": [
+          {
+            "id": 10,
+            "name": "existe_agendamento_cancelar",
+            "path": "existe_agendamento"
+          },
+          {
+            "id": 11,
+            "name": "data_hora_agendamento_cancelar",
+            "path": "data_iso"
+          },
+          {
+            "id": 12,
+            "name": "sumario_consulta_cancelar",
+            "path": "summary"
+          },
+          {
+            "id": 13,
+            "name": "calendar_id_cancelar",
+            "path": "calendar_id"
+          },
+          {
+            "id": 14,
+            "name": "event_id_cancelar",
+            "path": "event_id"
+          }
+        ]
+      },
+      "position": {
+        "x": 133.9616516864352,
+        "y": 686.2729189972063
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 133.9616516864352,
+        "y": 686.2729189972063
+      }
+    },
+    {
+      "id": "44",
+      "type": "messageNode",
+      "data": {
+        "messageData": "\"Um momento enquanto verifico seu agendamento...\"",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 1
+        }
+      },
+      "position": {
+        "x": -195.8106082702195,
+        "y": 680.1082870865456
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": -195.8106082702195,
+        "y": 680.1082870865456
+      }
+    },
+    {
+      "id": "45",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "45.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:existe_agendamento_cancelar}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "45.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 531.7576028169037,
+        "y": 669.6610012854972
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": 531.7576028169037,
+        "y": 669.6610012854972
+      }
+    },
+    {
+      "id": "46",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Verifiquei no sistema que não existe nenhum agendamento com esse contato.\n\nVou te transferir para a Ariana que vai prosseguir com você, caso queira agendar. ",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 863.1229224759072,
+        "y": 218.6287104860062
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 863.1229224759072,
+        "y": 218.6287104860062
+      }
+    },
+    {
+      "id": "47",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"cancelamento\",\n  \"telefone\": \"5561999887766\",\n  \"calendar_id\": \"{{api:calendar_id_cancelar}}\",\n  \"event_id\": \"{{api:event_id_cancelar}}\",\n  \"motivo_cancelamento\": \"{{gpt:motivo_cancelamento}}\"\n}\n\n",
+        "apiVariables": []
+      },
+      "position": {
+        "x": 1330.787118765071,
+        "y": 856.7937101490436
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 1330.787118765071,
+        "y": 856.7937101490436
+      }
+    },
+    {
+      "id": "48",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Sua consulta foi cancelada. Caso queira remarcar uma outra consulta, entre em contato novamente. \nA Clínica Aria agradece! ",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 3
+        }
+      },
+      "position": {
+        "x": 1808.542251154065,
+        "y": 562.3501253800218
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 1808.542251154065,
+        "y": 562.3501253800218
+      }
+    },
+    {
+      "id": "49",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 2146.085165898834,
+        "y": 630.4500306730716
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": 2146.085165898834,
+        "y": 630.4500306730716
+      }
+    },
+    {
+      "id": "50",
+      "type": "messageNode",
+      "data": {
+        "messageData": "\"Um momento enquanto verifico seu agendamento atual...\"",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 1
+        }
+      },
+      "position": {
+        "x": -377.6836180818403,
+        "y": 1925.211011660746
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": -377.6836180818403,
+        "y": 1925.211011660746
+      }
+    },
+    {
+      "id": "51",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"verificar_evento_id\",\n  \"telefone\": \"5561999887777\"\n}",
+        "apiVariables": [
+          {
+            "id": 10,
+            "name": "existe_agendamento_reagendamento",
+            "path": "existe_agendamento"
+          },
+          {
+            "id": 11,
+            "name": "data_hora_do_agendamento_reagendamento",
+            "path": "data_iso"
+          },
+          {
+            "id": 12,
+            "name": "sumario_consulta_reagendamento",
+            "path": "summary"
+          },
+          {
+            "id": 13,
+            "name": "calendar_id_reagendamento",
+            "path": "calendar_id"
+          },
+          {
+            "id": 14,
+            "name": "event_id_reagendamento",
+            "path": "event_id"
+          },
+          {
+            "id": 15,
+            "name": "nome_completo_reagendamento",
+            "path": "nome_completo"
+          }
+        ]
+      },
+      "position": {
+        "x": 393.2372924632024,
+        "y": 1931.369077220899
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 393.2372924632024,
+        "y": 1931.369077220899
+      }
+    },
+    {
+      "id": "53",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Verifiquei no sistema que não existe nenhum agendamento com esse contato.\n\nVou te transferir para a Ariana que vai prosseguir com você, caso queira agendar. ",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 1456.17501726073,
+        "y": 1526.950556461183
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 1456.17501726073,
+        "y": 1526.950556461183
+      }
+    },
+    {
+      "id": "54",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é o assistente virtual da Clínica Aria responsável por reagendamentos de consulta.\n\nVocê já está no meio do atendimento.\nNão se apresente novamente.\nContinue a conversa de forma natural, profissional e acolhedora.\n\n--------------------------------------------------\n\nCONTEXTO:\n\nIdentificamos a seguinte consulta agendada:\n\nData e hora: {{api:data_hora_do_agendamento_reagendamento}}\nSumário contendo Nome do paciente e nome do Dr(a): {{api:sumario_consulta_reagendamento}}\nNome completo do paciente: {{api:nome_completo_reagendamento}}\nID do Calendário: {{api:calendar_id_reagendamento}}\nID do evento: {{api:event_id_reagendamento}}\nFlag se existe agendamento: {{api:existe_agendamento_reagendamento}}\nData de hoje: {{api:data_atual_timestamp_rea}}\n--------------------------------------------------\n\nSUA MISSÃO:\n\n1. Informar ao paciente que encontramos essa consulta.\n2. Confirmar se os dados estão corretos.\n3. Perguntar para qual nova data ele deseja reagendar.\n4. Coletar:\n   - nova_data (converter para YYYY-MM-DD)\n   - novo_periodo (manha ou tarde)\n5. Não pedir todas as informações de uma vez.\n6. Manter o padrão de comunicação da Clínica Aria:\n   - Tom humano e seguro\n   - Linguagem clara e organizada\n   - No máximo 1 emoji discreto\n\n--------------------------------------------------\n\nREGRAS IMPORTANTES:\n\n- Não cancele a consulta atual.\n- Não mencione sistemas internos.\n- Não finalize até obter nova data e período.\n- Converta datas como \"25 de fevereiro\" para YYYY-MM-DD.\n- Não mencione JSON durante a conversa.\n\n--------------------------------------------------\n\nFINALIZAÇÃO:\n\nQuando coletar a nova data e período,\nresponda APENAS com JSON válido no formato:\n\n{\n  \"nova_data_iso\": \"\",\n  \"novo_periodo\": \"\"\n}\n",
+        "AIId": "",
+        "assistantId": "asst_HJH4P3fLV2w4rcYNMWASpHfX",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "nova_data",
+            "description": "Nova data que o cliente deseja para a sua consulta (já convertida no padrão ISO)"
+          },
+          {
+            "id": 2,
+            "name": "novo_periodo",
+            "description": "Novo período que o cliente deseja para a sua consulta"
+          }
+        ],
+        "failPath": true,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 1837.104604422439,
+        "y": 2205.111040301274
+      },
+      "width": 278,
+      "height": 641,
+      "positionAbsolute": {
+        "x": 1837.104604422439,
+        "y": 2205.111040301274
+      }
+    },
+    {
+      "id": "55",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "55.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:existe_agendamento_reagendamento}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "55.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 773.7866353620832,
+        "y": 1904.300538988946
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": 773.7866353620832,
+        "y": 1904.300538988946
+      }
+    },
+    {
+      "id": "60",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"get_data_base\" \n}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "data_atual_timestamp",
+            "path": "timestamp"
+          }
+        ]
+      },
+      "position": {
+        "x": -969.7583340658309,
+        "y": -970.0643909499371
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": -969.7583340658309,
+        "y": -970.0643909499371
+      }
+    },
+    {
+      "id": "61",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"get_data_base\" \n}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "data_atual_timestamp_rea",
+            "path": "timestamp"
+          }
+        ]
+      },
+      "position": {
+        "x": 2.694679278943113,
+        "y": 1927.483779537346
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 2.694679278943113,
+        "y": 1927.483779537346
+      }
+    },
+    {
+      "id": "62",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Um momento enquanto verifico os novos horários disponíveis para o dia escolhido... ⏳\n",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 2228.474714543282,
+        "y": 2400.205013303012
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 2228.474714543282,
+        "y": 2400.205013303012
+      }
+    },
+    {
+      "id": "63",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"verificacao\",\n  \"telefone\": \"5561999887777\",\n  \"data_iso\": \"{{gpt:nova_data}}\",\n  \"periodo\": \"{{gpt:novo_periodo}}\"\n}",
+        "apiVariables": [
+          {
+            "id": 8,
+            "name": "success_reagendamento",
+            "path": "success"
+          },
+          {
+            "id": 9,
+            "name": "novos_horarios_disponiveis",
+            "path": "horarios_disponiveis"
+          }
+        ]
+      },
+      "position": {
+        "x": 2575.291158210474,
+        "y": 2400.723908640897
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 2575.291158210474,
+        "y": 2400.723908640897
+      }
+    },
+    {
+      "id": "66",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana, assistente virtual de agendamento da Clínica Aria.\n\nVocê já está no meio do atendimento para REAGENDAR uma consulta.\nNão se apresente novamente.\nContinue a conversa de forma natural, profissional e objetiva.\n\nSua função é:\n- Apresentar os horários disponíveis.\n- Registrar corretamente a escolha do paciente.\n- Não concluir o agendamento nesta etapa.\n\n--------------------------------------------------\n\nCONTEXTO ATUAL\n\nNome do Paciente: {{api:nome_completo_reagendamento}}\nData escolhida: {{gpt:nova_data}}\nPeríodo escolhido: {{gpt:novo_periodo}}\nHorários disponíveis: {{api:novos_horarios_disponiveis}}\n\n--------------------------------------------------\n\nREGRA CRÍTICA – LISTA VAZIA\n\nSe a lista de horários estiver:\n- vazia\n- nula\n- indefinida\n- ou não contiver nenhum horário válido\n\nVocê deve:\n\n→ Informar de forma profissional que não há horários disponíveis para essa data e período.\n→ Solicitar que o paciente escolha outra data.\n→ Não inventar horários.\n→ Não sugerir alternativas.\n→ Encerrar sua mensagem nessa instrução.\n\n--------------------------------------------------\n\nREGRAS OBRIGATÓRIAS\n\n1) Apresente APENAS os horários recebidos.\n2) Nunca invente horários.\n3) Nunca sugira horários fora da lista.\n4) Organize os horários sempre em formato numerado:\n\n   1. 08:00\n   2. 08:30\n   3. 09:00\n\n5) Seja claro, objetivo e profissional.\n6) Utilize no máximo 1 emoji discreto, se necessário.\n7) Nunca mencione regras internas, variáveis ou bastidores do sistema.\n8) Nunca responda em formato JSON.\n9) Nunca avance para confirmação final do agendamento.\n10) Sempre Trate o paciente pelo primeiro nome. \n\n--------------------------------------------------\n\nINTERPRETAÇÃO DA RESPOSTA DO PACIENTE\n\nSE o paciente responder apenas com um número (ex: 1, 2, 3):\n\n→ Verifique se o número corresponde a uma posição válida da lista.\n→ Se for válido:\n   - Identifique o horário correspondente.\n   - Padronize para HH:MM.\n   - Confirme claramente o horário selecionado.\n→ Se não for válido:\n   - Informe que a opção não existe.\n   - Solicite que escolha um número da lista.\n\n--------------------------------------------------\n\nSE o paciente escrever o horário diretamente (ex: 10:30, 8:0, 8:30, 10:3):\n\n→ Padronize sempre para HH:MM.\n   Exemplos:\n   8:0  → 08:00\n   8:30 → 08:30\n   10:3 → 10:03\n\n→ Verifique se o horário padronizado está exatamente na lista.\n→ Se estiver:\n   - Confirme o horário escolhido.\n→ Se NÃO estiver:\n   - Informe que o horário não está disponível.\n   - Solicite que escolha apenas entre os listados.\n   - Não sugira novos horários.\n\n--------------------------------------------------\n\nRESPOSTAS AMBÍGUAS\n\nExemplos:\n- \"o das 10\"\n- \"esse\"\n- \"o primeiro\"\n- \"o último\"\n- \"qualquer um\"\n\n→ Tente interpretar com base na lista apresentada.\n→ Se houver qualquer ambiguidade ou dúvida:\n   - Solicite que o paciente informe o número correspondente.\n\n--------------------------------------------------\n\nMUDANÇA DE TURNO\n\nSe o paciente demonstrar intenção de mudar o período (ex: \"prefiro à tarde\", \"quero outro período\", \"melhor de manhã\"):\n\n→ NÃO redirecione automaticamente.\n→ Informe que, para alterar o período, ele deve enviar exatamente a mensagem:\n\nquero mudar de turno\n\nApenas quando o paciente enviar exatamente:\n\nquero mudar de turno\n\n→ Responda SOMENTE com:\n\nMUDAR_TURNO\n\nSem texto adicional.\nSem explicações.\nSem pontuação extra.\n\n--------------------------------------------------\n\nCONFIRMAÇÃO DO HORÁRIO\n\nQuando o paciente escolher corretamente um horário disponível:\n\n→ Padronize o horário para HH:MM.\n→ Confirme claramente o horário selecionado.\n→ Informe que enviará uma mensagem com o resumo dos dados para confirmação final.\n→ Não finalize o agendamento nesta etapa.",
+        "AIId": "",
+        "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "horario_escolhido_reagendamento",
+            "description": "Horário que o cliente na qual você está atendendo escolheu para marcar a consulta"
+          }
+        ],
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 3158.320832968403,
+        "y": 2261.011161597982
+      },
+      "width": 278,
+      "height": 637,
+      "positionAbsolute": {
+        "x": 3158.320832968403,
+        "y": 2261.011161597982
+      }
+    },
+    {
+      "id": "67",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"reagendamento\",\n  \"telefone\": \"5561999887777\",\n  \"calendar_id\": \"{{api:calendar_id_reagendamento}}\",\n  \"event_id\": \"{{api:event_id_reagendamento}}\",\n  \"nova_data_iso\": \"{{gpt:nova_data}}\",\n  \"horario_consulta\": \"{{gpt:horario_escolhido_reagendamento}}\"\n}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success_consulta_reagendada",
+            "path": "success"
+          }
+        ]
+      },
+      "position": {
+        "x": 3616.142122072933,
+        "y": 2454.303355996369
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": 3616.142122072933,
+        "y": 2454.303355996369
+      }
+    },
+    {
+      "id": "68",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "Você é o assistente virtual da Clínica Aria.\n\nSua função é gerar uma mensagem profissional de confirmação de REAGENDAMENTO de consulta para envio via WhatsApp.\n\nUtilize as informações abaixo para montar a mensagem:\n\nNome do Paciente: {{api:nome_completo_reagendamento}}\nData escolhida: {{gpt:nova_data}}\nPeríodo escolhido: {{gpt:novo_periodo}}\nHorário escolhido: {{gpt:horario_escolhido}}\n\nREGRAS IMPORTANTES:\n\n- Converta a data para o formato brasileiro: DD/MM/YYYY.\n- Não mostre o período (manhã/tarde) se o horário já estiver claro.\n- Destaque as informações principais usando *negrito no padrão do WhatsApp* (asteriscos).\n- A mensagem deve ser clara, acolhedora e profissional.\n- Use no máximo 1 emoji discreto.\n- Não retorne JSON.\n- Gere apenas a mensagem final pronta para envio.\n\nA mensagem deve:\n\n1. Confirmar que a consulta foi reagendada com sucesso.\n2. Destacar:\n   - Data\n   - Horário\n3. Informar que entraremos em contato 1 dia antes para lembrar do compromisso.\n4. Encerrar de forma cordial e profissional.\n",
+        "AIId": "gpt-4o-mini",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [],
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 3
+        }
+      },
+      "position": {
+        "x": 4777.12745617615,
+        "y": 2297.701261304343
+      },
+      "width": 278,
+      "height": 534,
+      "positionAbsolute": {
+        "x": 4777.12745617615,
+        "y": 2297.701261304343
+      }
+    },
+    {
+      "id": "69",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 5271.956802250264,
+        "y": 2510.733544909485
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": 5271.956802250264,
+        "y": 2510.733544909485
+      }
+    },
+    {
+      "id": "70",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "70.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success_consulta_reagendada}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "70.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 4115.321627202219,
+        "y": 2422.399799222227
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": 4115.321627202219,
+        "y": 2422.399799222227
+      }
+    },
+    {
+      "id": "71",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Identificamos uma instabilidade ao processar o reagendamento.\nVou te encaminhar agora para um de nossos atendentes concluir isso para você de forma rápida.",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 4566.048152812627,
+        "y": 776.2045209459104
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 4566.048152812627,
+        "y": 776.2045209459104
+      }
+    },
+    {
+      "id": "72",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nThe patient is in the consultative stage.\nThey want to know more about Clínica Aria or are clarifying doubts before deciding.\n\nOBJECTIVE OF THIS STAGE\n\n- Understand the patient's context.\n- Clarify doubts using the knowledge base when required.\n- Build trust.\n- Naturally guide toward scheduling if there is openness.\n\n--------------------------------------------------\n\nOPERATIONAL DIRECTIVES\n\n1) Analyze the patient’s latest message.\n2) Identify whether it is:\n   - A direct question\n   - An objection\n   - A curiosity about structure or treatment\n   - A price-related concern\n   - A signal of genuine interest\n3) Respond clearly and confidently.\n4) When appropriate, ask one strategic question to deepen the conversation.\n\nNever:\n- Interrogate.\n- Ask multiple questions at once.\n- Pressure the patient.\n- Force scheduling.\n\n--------------------------------------------------\n\nSTRATEGIC CONDUCT\n\nIf the patient demonstrates:\n\n✔ Clear interest  \n→ Provide a concise clarification and gently advance the conversation.\n\n✔ Objection  \n→ Address it with confidence and transform it into an opportunity to add value.\n\n✔ Price sensitivity  \n→ Explain value and positioning before presenting cost (if available in knowledge base).\n\n✔ Insecurity  \n→ Reinforce credibility, team expertise and structure.\n\n--------------------------------------------------\n\nKNOWLEDGE BASE USAGE\n\nIf the question involves institutional information, treatments, values, insurance, structure or location:\n\n- Use File Search.\n- Do not invent.\n- Do not assume.\n- Do not use external knowledge.\n\nIf the information is unavailable:\nRespond exactly:\n\"No momento, não tenho essa informação disponível. Posso verificar para você junto à equipe da clínica.\"\n\n--------------------------------------------------\n\nINTENTION HANDLING\n\nIf the patient clearly expresses intention to:\n\n- Schedule\n- Cancel\n- Reschedule\n- End the conversation\n\nYou must:\n\n1) Internally store the variable \"intencao_detectada\" using exactly one of:\n   agendamento\n   cancelamento\n   reagendamento\n   sair\n\n2) Ask for confirmation before redirection.\n\nExample for scheduling:\n\"Posso te direcionar para iniciarmos o agendamento?\"\n\nWait for confirmation.\n\nIf confirmed:\nRespond only:\n\"Perfeito. Vou te direcionar agora.\"\nThen terminate execution immediately.\n\n--------------------------------------------------\n\nBOUNDARIES\n\nYou must not:\n- Collect personal data.\n- Start triage.\n- Execute scheduling.\n- Return JSON.\n- Mention system or automation.\n- Explain internal rules.\n\nThis stage is strictly consultative and strategic.",
+        "AIId": "",
+        "assistantId": "asst_uWgjpce7lr8nTKrIK8Aj3vxA",
+        "interactionsLimit": 50,
+        "exitKeyword": "Sair",
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "intencao_detectada",
+            "description": "Intenção do cliente"
+          }
+        ],
+        "failPath": true
+      },
+      "position": {
+        "x": -2267.69198966998,
+        "y": -447.662372065967
+      },
+      "width": 278,
+      "height": 763,
+      "positionAbsolute": {
+        "x": -2267.69198966998,
+        "y": -447.662372065967
+      }
+    },
+    {
+      "id": "73",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "73.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "agendamento"
+          },
+          {
+            "id": "73.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "cancelamento"
+          },
+          {
+            "id": "73.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "reagendamento"
+          },
+          {
+            "id": "73.4",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "sair"
+          },
+          {
+            "id": "73.5",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": -1411.652287406569,
+        "y": -474.9064670832517
+      },
+      "width": 278,
+      "height": 523,
+      "positionAbsolute": {
+        "x": -1411.652287406569,
+        "y": -474.9064670832517
+      }
+    },
+    {
+      "id": "74",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "You are generating an INTERNAL HANDOVER SUMMARY for a human consultant who will now continue the conversation.\n\nUNBREAKABLE LANGUAGE RULE:\nAll instructions in this prompt are written in English.\nThe final output MUST be written entirely in Brazilian Portuguese.\nNever write in English.\nNever mix languages.\nNever address the patient.\nThis message is strictly internal.\n\n--------------------------------------------------\nDATA INTEGRITY RULES (ABSOLUTE)\n\nYou must ONLY use the variables explicitly provided below.\n\nYou are strictly forbidden from:\n- Inventing information\n- Inferring missing data\n- Guessing values\n- Using memory from past sessions\n- Creating contextual assumptions\n- Modifying variable values\n\nIf a variable does not exist, is empty, null, or undefined, you must write exactly:\n\"Não informado\"\n\n--------------------------------------------------\nAVAILABLE VARIABLES (USE ONLY THESE)\n\n- {{gpt:nome_completo}}\n- {{gpt:primeiro_nome}}\n- {{gpt:data_nascimento}}\n- {{gpt:idade_paciente}}\n- {{gpt:tipo_tratamento}}\n- {{gpt:queixa_principal}}\n- {{gpt:data_iso}}\n- {{gpt:periodo}}\n- {{gpt:horario_escolhido}}\n- {{gpt:intencao_detectada}}\n- {{api:mensagem_api_n8n}}\n\n--------------------------------------------------\nERROR INTERPRETATION RULE\n\nThe variable {{api:mensagem_api_n8n}} contains the raw \"message\" field returned by the n8n API.\n\nYou must:\n\n1) Analyze this message strictly as text.\n2) Identify whether it indicates:\n   - Validation error\n   - Scheduling conflict\n   - Missing parameter\n   - Authentication issue\n   - External API failure\n   - Unknown system error\n3) Translate the technical meaning into a clear operational explanation in Portuguese.\n4) If the variable is empty or does not clearly indicate an error, write:\n\n\"Instabilidade operacional durante o fluxo automatizado.\"\n\nDo NOT invent technical causes.\nDo NOT create speculative explanations.\nBase your interpretation strictly on the content of {{api:mensagem_api_n8n}}.\n\n--------------------------------------------------\nOBJECTIVE\n\nGenerate a structured and operational briefing for the human attendant.\n\nThe output MUST follow EXACTLY the structure below.\nDo not add sections.\nDo not remove sections.\nDo not reorder sections.\n\n--------------------------------------------------\n\n🔎 DADOS DO PACIENTE\n- Nome completo:\n- Primeiro nome:\n- Data de nascimento:\n- Idade:\n- Tipo de tratamento sugerido:\n- Queixa principal:\n- Data desejada:\n- Período:\n- Horário escolhido:\n- Intenção detectada:\n\n--------------------------------------------------\n\n🧠 RESUMO OBJETIVO DO CONTEXTO\nDescrever de forma objetiva:\n\n- Em qual etapa do fluxo o paciente estava\n- O que já foi concluído\n- O que ainda precisa ser feito\n- Se o agendamento estava confirmado ou não\n\nMáximo 6 linhas.\nNão adicionar suposições.\n\n--------------------------------------------------\n\n📊 PERFIL COMPORTAMENTAL PERCEBIDO\nClassificar apenas com base nas variáveis disponíveis.\n\nPossíveis classificações:\n- Objetivo\n- Direto\n- Inseguro\n- Indeciso\n- Racional\n- Emocional\n\nJustificar em até 3 linhas.\n\nIf there is not enough information, write exactly:\n\"Informações insuficientes para análise comportamental.\"\n\n--------------------------------------------------\n\n⛔ ETAPA DE INTERRUPÇÃO\nIndicar claramente uma das opções abaixo:\n\n- Triagem\n- Escolha de data\n- Escolha de horário\n- Confirmação\n- Pós-confirmação\n- Cancelamento\n- Reagendamento\n- Outro (especificar somente se for evidente pelas variáveis)\n\n--------------------------------------------------\n\n⚠️ MOTIVO DA TRANSFERÊNCIA\n\nBasear EXCLUSIVAMENTE na variável:\n{{api:mensagem_api_n8n}}\n\nSe houver conteúdo interpretável, explicar de forma operacional e clara.\n\nSe não houver informação suficiente, escrever exatamente:\n\n\"Instabilidade operacional durante o fluxo automatizado.\"\n\n--------------------------------------------------\n\nFINAL OUTPUT RULES\n\n- Do not greet.\n- Do not close.\n- Do not add commentary.\n- Do not use emojis.\n- Do not speak to the patient.\n- Do not exceed the defined structure.\n- Do not add extra sections.\n- Output must be professional, structured and operational.\n- Output must be entirely in Brazilian Portuguese.",
+        "AIId": "gpt-4",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": true,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 6652.534432481103,
+        "y": -1254.196456884549
+      },
+      "width": 278,
+      "height": 534,
+      "positionAbsolute": {
+        "x": 6652.534432481103,
+        "y": -1254.196456884549
+      }
+    },
+    {
+      "id": "75",
+      "type": "transferNode",
+      "data": {
+        "transferType": "user",
+        "selectedUser": "134031"
+      },
+      "position": {
+        "x": 7076.710432852265,
+        "y": -1108.407555200814
+      },
+      "width": 278,
+      "height": 239,
+      "positionAbsolute": {
+        "x": 7076.710432852265,
+        "y": -1108.407555200814
+      }
+    },
+    {
+      "id": "76",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Você deseja escolher uma nova data?",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": "reescolher_data",
+        "customMessage": null,
+        "formatType": "whatsapp-buttons",
+        "useWhatsAppButtons": true,
+        "options": [
+          {
+            "id": "76.1",
+            "content": "SIM",
+            "keywords": []
+          },
+          {
+            "id": "76.2",
+            "content": "Quero Encerrar",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": -134.1950725079045,
+        "y": -2491.614887127645
+      },
+      "width": 278,
+      "height": 578,
+      "positionAbsolute": {
+        "x": -134.1950725079045,
+        "y": -2491.614887127645
+      }
+    },
+    {
+      "id": "77",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Claro, se precisar estamos por aqui!😃\n\nA Clínica Aria agradece o seu contato! ",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": -1158.664411916327,
+        "y": -1514.159473354702
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": -1158.664411916327,
+        "y": -1514.159473354702
+      }
+    },
+    {
+      "id": "78",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": -764.5267055186873,
+        "y": -1451.588283511328
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": -764.5267055186873,
+        "y": -1451.588283511328
+      }
+    },
+    {
+      "id": "79",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "79.1",
+            "type": "variable_comparison",
+            "comparisonType": "lesser_then",
+            "firstValue": "{{gpt:idade_paciente}}",
+            "secondValue": "17"
+          },
+          {
+            "id": "79.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 674.0179234876312,
+        "y": -1502.56157922932
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": 674.0179234876312,
+        "y": -1502.56157922932
+      }
+    },
+    {
+      "id": "80",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 1022.050439101406,
+        "y": -1650.45315362023
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": 1022.050439101406,
+        "y": -1650.45315362023
+      }
+    },
+    {
+      "id": "81",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "You are the virtual assistant of Clínica Aria responsible for confirming dental appointments.\n\nUNBREAKABLE RULE:\nAll internal instructions are written in English.\nAll communication with the patient MUST ALWAYS be in Brazilian Portuguese.\nYou are strictly forbidden from answering in English.\n\nThe appointment has been successfully scheduled.\n\nYour task is to generate the final confirmation message for WhatsApp delivery.\n\n--------------------------------------------------\nAPPOINTMENT DATA\n\n- Patient full name: {{gpt:nome_completo}}\n- Date: {{gpt:data_formatada}}\n- Time: {{gpt:horario_escolhido}}\n- Raw event summary: {{api:nome_dentista_consulta}}\n\n--------------------------------------------------\nPROFESSIONAL NAME EXTRACTION (MANDATORY RULE)\n\nThe field {{api:nome_dentista_consulta}} contains the event summary in a format similar to:\n\n\"Consulta [Higor - Dra. Gabriella]\"\n\nYou must:\n\n1. Extract ONLY the professional's name appearing after the hyphen.\n2. Remove:\n   - The word \"Consulta\"\n   - Brackets\n   - Patient name\n   - Any extra characters\n3. Use only the dentist’s name in the final message.\n\nCorrect example:\nIf summary is:\nConsulta [Higor - Dra. Gabriella]\n\nYou must use only:\nDra. Gabriella\n\nNever display the raw summary.\nNever show brackets.\nNever include the patient’s name inside the professional field.\n\n--------------------------------------------------\nMESSAGE FORMAT RULES\n\nThe message must:\n\n1. Clearly confirm the appointment.\n2. Repeat the appointment data in an organized way.\n3. Highlight Date and Time using WhatsApp bold format (*text*).\n4. Mention the professional’s name.\n5. Inform that the clinic will contact the patient 1 day before as a reminder.\n6. Maintain a professional, humanized and confident tone.\n7. Have a maximum of 6 lines.\n8. Use at most 1 discreet emoji, if appropriate.\n9. Not mention systems.\n10. Not mention API.\n11. Not return JSON.\n12. Generate only the final message ready to send.\n\n--------------------------------------------------\nEXPECTED STRUCTURE (REFERENCE MODEL)\n\nOlá, {{gpt:nome_completo}}.\n\nSua consulta está confirmada para o dia *{{gpt:data_formatada}}* às *{{gpt:horario_escolhido}}*, com a(o) {{nome_extraído}}.\n\nNossa equipe entrará em contato 1 dia antes para relembrar seu compromisso.\n\n--------------------------------------------------\nSTRICT PROHIBITIONS\n\n- Never invent additional information.\n- Never include medical guidance.\n- Never modify date or time.\n- Do not include automatic signatures.\n- Do not add extra paragraphs.\n- Do not extend beyond 6 lines.\n\nGenerate only the final confirmation message in Brazilian Portuguese.",
+        "AIId": "gpt-4o",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 4390.278565254628,
+        "y": -2716.990159605284
+      },
+      "width": 278,
+      "height": 534,
+      "positionAbsolute": {
+        "x": 4390.278565254628,
+        "y": -2716.990159605284
+      }
+    },
+    {
+      "id": "82",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nThe appointment has already been confirmed.\nThe patient has already received the confirmation message.\n\nYou are now in the final post-confirmation stage.\n\nYour role in this stage is strictly limited to:\n\n- Verifying if the patient has any remaining questions about:\n  • The clinic\n  • The appointment process\n  • How the consultation works\n- Clarifying objectively if a doubt exists.\n- Suggesting Instagram only if there are no doubts.\n- Terminating immediately after completing this stage.\n\n--------------------------------------------------\nMANDATORY FIRST MESSAGE\n\nStart exactly with:\n\n\"[Primeiro Nome], ficou alguma dúvida sobre o atendimento da Clínica Aria ou sobre como funciona a sua consulta?\"\n\nWait for the patient’s response.\n\n--------------------------------------------------\nIF THE PATIENT HAS A DOUBT\n\n1) Ask:\n   \"Qual dúvida posso esclarecer para você?\"\n\n2) Use File Search if the doubt involves institutional information.\n3) Answer clearly and objectively.\n4) Do not extend the conversation unnecessarily.\n5) Do not sell.\n6) Do not redirect.\n7) Do not restart any process.\n\nAfter answering:\n\nIf the patient does not express another doubt,\nproceed to Instagram suggestion and terminate.\n\n--------------------------------------------------\nIF THE PATIENT HAS NO DOUBT\n\nIf the patient responds with:\n- \"Não\"\n- \"Nenhuma\"\n- \"Está tudo certo\"\n- \"Sem dúvida\"\n- Equivalent confirmations\n\nSend exactly:\n\n\"Perfeito. Se quiser acompanhar nossos conteúdos e novidades, você pode nos seguir no Instagram:\"\n\nOn the next line, send only the official Instagram link retrieved from the knowledge base.\n\nLink rules:\n- Must start with https://\n- Must appear alone on a single line\n- No markdown\n- No masking\n\nAfter sending the link:\nTerminate immediately.\n\n--------------------------------------------------\nCONSTRAINTS\n\nYou must not:\n- Detect intentions\n- Redirect to other sectors\n- Offer new scheduling\n- Analyze behavior\n- Sell\n- Collect data\n- Mention system logic\n- Send thank-you messages\n- Send goodbye messages\n- Continue conversation after finishing\n\n--------------------------------------------------\nTERMINATION RULE\n\nAfter:\n- Answering the final doubt\nOR\n- Sending the Instagram link\n\nTerminate execution immediately.\nDo not send any additional message.",
+        "AIId": "",
+        "assistantId": "asst_uWgjpce7lr8nTKrIK8Aj3vxA",
+        "interactionsLimit": 50,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 4750.084259843659,
+        "y": -2798.201254591258
+      },
+      "width": 278,
+      "height": 698,
+      "positionAbsolute": {
+        "x": 4750.084259843659,
+        "y": -2798.201254591258
+      }
+    },
+    {
+      "id": "83",
+      "type": "messageNode",
+      "data": {
+        "messageData": "A Clínica Aria agradece o seu contato!",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 5348.475556302806,
+        "y": -2502.724060506016
+      },
+      "width": 278,
+      "height": 250,
+      "positionAbsolute": {
+        "x": 5348.475556302806,
+        "y": -2502.724060506016
+      }
+    },
+    {
+      "id": "84",
+      "type": "questionNode",
+      "data": {
+        "type": "options",
+        "message": "Certo 😊\nVocê deseja cancelar ou reagendar sua consulta?",
+        "leadField": null,
+        "contactField": null,
+        "dealField": null,
+        "companyField": null,
+        "variableField": null,
+        "customMessage": "Por favor, selecione uma das opções listadas.",
+        "formatType": "topics",
+        "useWhatsAppButtons": false,
+        "options": [
+          {
+            "id": "84.1",
+            "content": "Cancelar",
+            "keywords": []
+          },
+          {
+            "id": "84.2",
+            "content": "Reagendar",
+            "keywords": []
+          }
+        ]
+      },
+      "position": {
+        "x": -2317.028015650596,
+        "y": 700.3451211847372
+      },
+      "width": 278,
+      "height": 632,
+      "positionAbsolute": {
+        "x": -2317.028015650596,
+        "y": 700.3451211847372
+      }
+    },
+    {
+      "id": "86",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": -2753.991027183444,
+        "y": 3527.312528645819
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": -2753.991027183444,
+        "y": 3527.312528645819
+      }
+    },
+    {
+      "id": "87",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": -1063.740915759833,
+        "y": 92.56666228350296
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": -1063.740915759833,
+        "y": 92.56666228350296
+      }
+    },
+    {
+      "id": "88",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 3848.77306767803,
+        "y": -1236.492084012688
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": 3848.77306767803,
+        "y": -1236.492084012688
+      }
+    },
+    {
+      "id": "89",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "89.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento}}",
+            "secondValue": "triagem"
+          },
+          {
+            "id": "89.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2657.056946403199,
+        "y": -2458.671682729894
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": 2657.056946403199,
+        "y": -2458.671682729894
+      }
+    },
+    {
+      "id": "90",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "90.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "90.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 4290.606076704642,
+        "y": -1759.985201509202
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": 4290.606076704642,
+        "y": -1759.985201509202
+      }
+    },
+    {
+      "id": "93",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\n  \"evento\": \"verificar_evento_id\",\n  \"telefone\": \"5561999887777\"\n}",
+        "apiVariables": [
+          {
+            "id": 10,
+            "name": "existe_agendamento",
+            "path": "existe_agendamento"
+          },
+          {
+            "id": 11,
+            "name": "data_hora_do_agendamento",
+            "path": "data_iso"
+          },
+          {
+            "id": 12,
+            "name": "sumario_consulta",
+            "path": "summary"
+          },
+          {
+            "id": 13,
+            "name": "calendar_id",
+            "path": "calendar_id"
+          },
+          {
+            "id": 14,
+            "name": "event_id",
+            "path": "event_id"
+          },
+          {
+            "id": 15,
+            "name": "nome_completo",
+            "path": "nome_completo"
+          }
+        ]
+      },
+      "position": {
+        "x": -2892.508916763408,
+        "y": -1324.940670564475
+      },
+      "width": 278,
+      "height": 245,
+      "positionAbsolute": {
+        "x": -2892.508916763408,
+        "y": -1324.940670564475
+      }
+    },
+    {
+      "id": "94",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "94.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:existe_agendamento}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "94.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": -2492.540862918324,
+        "y": -1302.014069671578
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": -2492.540862918324,
+        "y": -1302.014069671578
+      }
+    },
+    {
+      "id": "95",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nThe system identified an existing active appointment for this patient.\n\nExisting appointment data:\n\n- Date (ISO): {{gpt:data_hora_do_agendamento_reagendamento}}\n- Summary: {{gpt:sumario_consulta_reagendamento}}\n- Full Name: {{api:nome_completo}}\n\nYou must extract:\n\n- Date in Brazilian format (DD/MM/AAAA)\n- Time (HH:MM)\n- Name of the professional\n- First Name of patient\n\n--------------------------------------------------\nOBJECTIVE\n\n1) Inform the patient that an active appointment already exists.\n2) Clearly present the appointment details.\n3) Ask whether they want to:\n   - Reagendar\n   - Cancelar\n4) Detect and store the intention.\n5) Terminate immediately after storing the intention.\n\n--------------------------------------------------\nMANDATORY FIRST MESSAGE\n\nSend exactly in this structure:\n\n\"[Primeiro Nome], identifiquei que você já possui um agendamento ativo para o dia DD/MM/AAAA às HH:MM com [Nome do profissional].\n\nVocê deseja reagendar ou cancelar essa consulta?\"\n\nWait for the response.\n\n--------------------------------------------------\nINTENTION DETECTION (STRICT)\n\nIf the patient indicates intention to:\n\nReagendar:\n- Store internally:\n  {{gpt:intencao_detectada}} = \"reagendamento\"\n- Respond only:\n  \"Perfeito. Vou direcionar você agora para realizarmos o reagendamento.\"\n- Terminate immediately.\n\nCancelar:\n- Store internally:\n  {{gpt:intencao_detectada}} = \"cancelamento\"\n- Respond only:\n  \"Perfeito. Vou direcionar você agora para realizarmos o cancelamento.\"\n- Terminate immediately.\n\n--------------------------------------------------\nIF AMBIGUOUS RESPONSE\n\nIf the response is unclear:\n\nAsk:\n\"Você prefere reagendar ou cancelar essa consulta?\"\n\nDo not continue beyond clarification.\n\n--------------------------------------------------\nCONSTRAINTS\n\n- Do not offer new scheduling.\n- Do not initiate triage.\n- Do not sell.\n- Do not detect other intentions.\n- Do not return JSON.\n- Do not mention system logic.\n- Do not continue conversation after storing intention.",
+        "AIId": "",
+        "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
+        "interactionsLimit": 20,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": -2057.190278990367,
+        "y": -1506.700245724338
+      },
+      "width": 278,
+      "height": 698,
+      "positionAbsolute": {
+        "x": -2057.190278990367,
+        "y": -1506.700245724338
+      }
+    },
+    {
+      "id": "96",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": -2060.586834839668,
+        "y": -788.7618341073982
+      },
+      "width": 278,
+      "height": 114,
+      "positionAbsolute": {
+        "x": -2060.586834839668,
+        "y": -788.7618341073982
+      }
+    },
+    {
+      "id": "97",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "CURRENT CONTEXT\n\nThe patient selected the option to speak with the reception.\n\nYour responsibilities in this stage:\n\n1) Provide the official reception contact immediately.\n2) Offer support for additional questions.\n3) Clarify doubts using the knowledge base.\n4) Verify whether the patient already has an evaluation scheduled.\n5) If not, invite the patient to schedule one.\n6) Handle controlled redirection and exit.\n\n--------------------------------------------------\nMANDATORY FIRST MESSAGE\n\nSend:\n\n\"Você pode falar diretamente com a nossa recepção pelo WhatsApp:\n\nRecepção Aria: 61 99643-1899\n\nSe preferir, também posso esclarecer qualquer dúvida ou informação que precise.\"\n\nWait for the patient's response.\n\n--------------------------------------------------\nIF THE PATIENT HAS QUESTIONS\n\n1) Answer clearly and objectively.\n2) Use File Search for institutional information.\n3) Never invent.\n4) Never assume.\n5) Keep responses professional and concise.\n\nAfter answering, ask:\n\n\"Você já possui avaliação marcada na Clínica Aria?\"\n\n--------------------------------------------------\nIF THE PATIENT DOES NOT HAVE AN EVALUATION\n\nIf the patient says no:\n\nRespond:\n\n\"Se desejar, posso direcionar você para agendarmos uma avaliação.\"\n\nIf the patient demonstrates intention to schedule:\n\nStore internally:\n{{gpt:intencao_detectada}} = \"agendamento\"\n\nRespond only:\n\"Perfeito. Vou direcionar você agora para o agendamento.\"\n\nTerminate immediately.\n\n--------------------------------------------------\nIF THE PATIENT ALREADY HAS AN EVALUATION\n\nIf yes:\n\nRespond professionally and remain available for clarification.\n\nIf no further doubt:\nTerminate cleanly.\n\n--------------------------------------------------\nHUMAN REDIRECTION CONTROL\n\nIf the patient demonstrates intention to speak directly with a human attendant:\n\nRespond:\n\n\"Se preferir atendimento humano agora, digite a palavra 'atendente' que eu direciono você.\"\n\nOnly if the patient types exactly:\n\natendente\n\nThen:\n\n1) Store internally:\n   {{gpt:direcionamento}} = \"atendente\"\n\n2) Respond only:\n   \"Perfeito. Vou direcionar você agora para um atendente.\"\n\n3) Terminate immediately.\n\n--------------------------------------------------\nEXIT CONTROL\n\nIf the patient demonstrates intention to leave:\n\nRespond:\n\n\"Se deseja encerrar o atendimento, digite a palavra 'sair' para finalizarmos.\"\n\nOnly if the patient types exactly:\n\nsair\n\nTerminate immediately.\n\n--------------------------------------------------\nCONSTRAINTS\n\n- Do not sell aggressively.\n- Do not pressure.\n- Do not restart triage automatically.\n- Do not return JSON.\n- Do not mention system logic.\n- Maximum 1 emoji if appropriate.\n- Keep tone professional, confident and structured.\n\n--------------------------------------------------\nTERMINATION RULE\n\nAfter:\n\n- Storing agendamento intention\nOR\n- Redirecting to atendente\nOR\n- Receiving \"sair\"\nOR\n- Clarifying all doubts with no further action\n\nTerminate execution immediately.",
+        "AIId": "",
+        "assistantId": "asst_7hQxNBKz8u6IJPOTfal8fHIj",
+        "interactionsLimit": 50,
+        "exitKeyword": "sair",
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": -2754.354403269541,
+        "y": 2707.192724875177
+      },
+      "width": 278,
+      "height": 759,
+      "positionAbsolute": {
+        "x": -2754.354403269541,
+        "y": 2707.192724875177
+      }
+    },
+    {
+      "id": "98",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "98.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "98.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": -2100.532381091521,
+        "y": 2827.13240838944
+      },
+      "width": 278,
+      "height": 307,
+      "positionAbsolute": {
+        "x": -2100.532381091521,
+        "y": 2827.13240838944
+      }
+    },
+    {
+      "id": "99",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "You are operating in ROUTING MODE.\n\nYour only responsibility in this stage is to:\n\n1) Analyze the patient's first message.\n2) Detect if there is a clear intent.\n3) If there is a clear intent:\n   - Send a brief welcome greeting.\n   - Inform that you will redirect.\n   - Store the value in variable: intencao_inicial\n   - Terminate immediately.\n4) If there is no clear intent:\n   - Store: intencao_inicial = \"indefinido\"\n   - Do NOT send any message.\n   - Continue normally (menu will be shown by the flow).\n\n--------------------------------------------------\n\nPOSSIBLE INTENT VALUES:\n\nagendamento\ncancelamento\nreagendamento\nduvidas\nrecepcao\nindefinido\n\n--------------------------------------------------\n\nINTENT RULES\n\nagendamento → wants to schedule\ncancelamento → wants to cancel\nreagendamento → wants to change date/time\nduvidas → asking about clinic, treatments, prices\nrecepcao → wants human, urgent, pain, emergency\nindefinido → greeting only or unclear\n\n--------------------------------------------------\n\nRESPONSE RULES (ONLY IF INTENT IS CLEAR)\n\nAlways start with a short professional welcome.\n\nExamples:\n\nIf agendamento:\n\"Seja bem-vindo(a) à Clínica Aria 😊 Já vou te direcionar para iniciarmos o agendamento.\"\n\nIf cancelamento:\n\"Seja bem-vindo(a). Vou te direcionar agora para realizarmos o cancelamento.\"\n\nIf reagendamento:\n\"Seja bem-vindo(a). Já vou te direcionar para ajustarmos seu agendamento.\"\n\nIf duvidas:\n\"Seja bem-vindo(a) 😊 Vou te direcionar para que possamos esclarecer suas dúvidas.\"\n\nIf recepcao:\n\"Seja bem-vindo(a). Vou te direcionar para a recepção agora mesmo.\"\n\n--------------------------------------------------\n\nSTRICT RULES\n\n- Do NOT ask questions.\n- Do NOT provide explanations.\n- Do NOT expand conversation.\n- Do NOT mention system.\n- Do NOT mention classification.\n- Do NOT continue after redirection message.\n- Keep message short and professional.\n- Maximum 1 emoji.\n- Do NOT greet if intent is indefinido.\n\n--------------------------------------------------\n\nPatient message:\n{{conversation:user_message}}",
+        "AIId": "",
+        "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": true,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "intencao_inicial",
+            "description": ""
+          }
+        ]
+      },
+      "position": {
+        "x": -4559.669876900414,
+        "y": -355.3074996070555
+      },
+      "width": 278,
+      "height": 637,
+      "positionAbsolute": {
+        "x": -4559.669876900414,
+        "y": -355.3074996070555
+      }
+    },
+    {
+      "id": "100",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "100.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "agendamento"
+          },
+          {
+            "id": "100.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "cancelamento"
+          },
+          {
+            "id": "100.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "reagendamento"
+          },
+          {
+            "id": "100.4",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "duvidas"
+          },
+          {
+            "id": "100.5",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "recepcao"
+          },
+          {
+            "id": "100.6",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "indefinido"
+          },
+          {
+            "id": "100.7",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": -4185.323133654623,
+        "y": -365.0658471714567
+      },
+      "width": 278,
+      "height": 667,
+      "positionAbsolute": {
+        "x": -4185.323133654623,
+        "y": -365.0658471714567
+      }
+    }
+  ],
+  "edges": [
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-11-9",
+      "source": "11",
+      "sourceHandle": null,
+      "target": "9"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "24",
+      "source": "9",
+      "sourceHandle": "9.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "29",
+      "source": "9",
+      "sourceHandle": "9.1",
+      "target": "29"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-2929.1-26",
+      "source": "29",
+      "sourceHandle": "29.1",
+      "target": "26"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "32",
+      "source": "27",
+      "sourceHandle": "27.2",
+      "target": "32"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-32-21",
+      "source": "32",
+      "sourceHandle": null,
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-2727.1-33",
+      "source": "27",
+      "sourceHandle": "27.1",
+      "target": "33"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-3333.2-24",
+      "source": "33",
+      "sourceHandle": "33.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "34",
+      "source": "33",
+      "sourceHandle": "33.1",
+      "target": "34"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "36",
+      "source": "34",
+      "sourceHandle": "34.3",
+      "target": "36"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-3434.2-36",
+      "source": "34",
+      "sourceHandle": "34.2",
+      "target": "36"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-2121.2-38",
+      "source": "21",
+      "sourceHandle": "21.2",
+      "target": "38"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-44-42",
+      "source": "44",
+      "sourceHandle": null,
+      "target": "42"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-4242.2-24",
+      "source": "42",
+      "sourceHandle": "42.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "45",
+      "source": "42",
+      "sourceHandle": "42.1",
+      "target": "45"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "46",
+      "source": "45",
+      "sourceHandle": "45.2",
+      "target": "46"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-46-21",
+      "source": "46",
+      "sourceHandle": null,
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-4545.1-40",
+      "source": "45",
+      "sourceHandle": "45.1",
+      "target": "40"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-4040.3-24",
+      "source": "40",
+      "sourceHandle": "40.3",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-4040-47",
+      "source": "40",
+      "sourceHandle": "40",
+      "target": "47"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "48",
+      "source": "47",
+      "sourceHandle": "47.1",
+      "target": "48"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "49",
+      "source": "48",
+      "sourceHandle": null,
+      "target": "49"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-4747.2-24",
+      "source": "47",
+      "sourceHandle": "47.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "55",
+      "source": "51",
+      "sourceHandle": "51.1",
+      "target": "55"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-5555.1-54",
+      "source": "55",
+      "sourceHandle": "55.1",
+      "target": "54"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-5555.2-53",
+      "source": "55",
+      "sourceHandle": "55.2",
+      "target": "53"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-5454.3-24",
+      "source": "54",
+      "sourceHandle": "54.3",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-53-21",
+      "source": "53",
+      "sourceHandle": null,
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "60",
+      "source": "39",
+      "sourceHandle": null,
+      "target": "60"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-5151.2-24",
+      "source": "51",
+      "sourceHandle": "51.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-50-61",
+      "source": "50",
+      "sourceHandle": null,
+      "target": "61"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6161.1-51",
+      "source": "61",
+      "sourceHandle": "61.1",
+      "target": "51"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6161.2-51",
+      "source": "61",
+      "sourceHandle": "61.2",
+      "target": "51"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-5454-62",
+      "source": "54",
+      "sourceHandle": "54",
+      "target": "62"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-62-63",
+      "source": "62",
+      "sourceHandle": null,
+      "target": "63"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6363.1-66",
+      "source": "63",
+      "sourceHandle": "63.1",
+      "target": "66"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "67",
+      "source": "66",
+      "sourceHandle": "66",
+      "target": "67"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "69",
+      "source": "68",
+      "sourceHandle": "68",
+      "target": "69"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6767.2-24",
+      "source": "67",
+      "sourceHandle": "67.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6363.2-24",
+      "source": "63",
+      "sourceHandle": "63.2",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "70",
+      "source": "67",
+      "sourceHandle": "67.1",
+      "target": "70"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7070.1-68",
+      "source": "70",
+      "sourceHandle": "70.1",
+      "target": "68"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "71",
+      "source": "70",
+      "sourceHandle": "70.2",
+      "target": "71"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7272.1-3",
+      "source": "72",
+      "sourceHandle": "72.1",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7272.3-3",
+      "source": "72",
+      "sourceHandle": "72.3",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "73",
+      "source": "72",
+      "sourceHandle": "72",
+      "target": "73"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7373.1-39",
+      "source": "73",
+      "sourceHandle": "73.1",
+      "target": "39"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7373.2-44",
+      "source": "73",
+      "sourceHandle": "73.2",
+      "target": "44"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7373.3-50",
+      "source": "73",
+      "sourceHandle": "73.3",
+      "target": "50"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7373.4-3",
+      "source": "73",
+      "sourceHandle": "73.5",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-2929.2-30",
+      "source": "29",
+      "sourceHandle": "29.2",
+      "target": "30"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-2929.3-24",
+      "source": "29",
+      "sourceHandle": "29.3",
+      "target": "24"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "74",
+      "source": "24",
+      "sourceHandle": null,
+      "target": "74"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "75",
+      "source": "74",
+      "sourceHandle": "74",
+      "target": "75"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "76",
+      "source": "30",
+      "sourceHandle": null,
+      "target": "76"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-71-74",
+      "source": "71",
+      "sourceHandle": null,
+      "target": "74"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7676.1-21",
+      "source": "76",
+      "sourceHandle": "76.1",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "77",
+      "source": "76",
+      "sourceHandle": "76.2",
+      "target": "77"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "78",
+      "source": "77",
+      "sourceHandle": null,
+      "target": "78"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "79",
+      "source": "21",
+      "sourceHandle": "21",
+      "target": "79"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "80",
+      "source": "79",
+      "sourceHandle": "79.1",
+      "target": "80"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7979.2-11",
+      "source": "79",
+      "sourceHandle": "79.2",
+      "target": "11"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "81",
+      "source": "34",
+      "sourceHandle": "34.1",
+      "target": "81"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "82",
+      "source": "81",
+      "sourceHandle": "81",
+      "target": "82"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "83",
+      "source": "82",
+      "sourceHandle": "82",
+      "target": "83"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-83-37",
+      "source": "83",
+      "sourceHandle": null,
+      "target": "37"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8282.1-83",
+      "source": "82",
+      "sourceHandle": "82.1",
+      "target": "83"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "84",
+      "source": "3",
+      "sourceHandle": "3.2",
+      "target": "84"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8484.1-44",
+      "source": "84",
+      "sourceHandle": "84.1",
+      "target": "44"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8484.2-50",
+      "source": "84",
+      "sourceHandle": "84.2",
+      "target": "50"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-33.3-72",
+      "source": "3",
+      "sourceHandle": "3.3",
+      "target": "72"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "87",
+      "source": "72",
+      "sourceHandle": "72.2",
+      "target": "87"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-7373.4-87",
+      "source": "73",
+      "sourceHandle": "73.4",
+      "target": "87"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "88",
+      "source": "36",
+      "sourceHandle": "36.2",
+      "target": "88"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "89",
+      "source": "26",
+      "sourceHandle": "26",
+      "target": "89"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8989.2-27",
+      "source": "89",
+      "sourceHandle": "89.2",
+      "target": "27"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8989.1-21",
+      "source": "89",
+      "sourceHandle": "89.1",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "90",
+      "source": "36",
+      "sourceHandle": "36",
+      "target": "90"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9090.1-74",
+      "source": "90",
+      "sourceHandle": "90.1",
+      "target": "74"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9090.2-21",
+      "source": "90",
+      "sourceHandle": "90.2",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-33.1-93",
+      "source": "3",
+      "sourceHandle": "3.1",
+      "target": "93"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9393.1-94",
+      "source": "93",
+      "sourceHandle": "93.1",
+      "target": "94"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9393.2-94",
+      "source": "93",
+      "sourceHandle": "93.2",
+      "target": "94"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9494.2-39",
+      "source": "94",
+      "sourceHandle": "94.2",
+      "target": "39"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "95",
+      "source": "94",
+      "sourceHandle": "94.1",
+      "target": "95"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9595-73",
+      "source": "95",
+      "sourceHandle": "95",
+      "target": "73"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "96",
+      "source": "95",
+      "sourceHandle": "95.1",
+      "target": "96"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "97",
+      "source": "3",
+      "sourceHandle": "3.4",
+      "target": "97"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9797.2-86",
+      "source": "97",
+      "sourceHandle": "97.2",
+      "target": "86"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9797.1-3",
+      "source": "97",
+      "sourceHandle": "97.1",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "98",
+      "source": "97",
+      "sourceHandle": "97",
+      "target": "98"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9898.1-74",
+      "source": "98",
+      "sourceHandle": "98.1",
+      "target": "74"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9898.2-73",
+      "source": "98",
+      "sourceHandle": "98.2",
+      "target": "73"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6060.1-21",
+      "source": "60",
+      "sourceHandle": "60.1",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-6060.2-21",
+      "source": "60",
+      "sourceHandle": "60.2",
+      "target": "21"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "99",
+      "source": "1",
+      "sourceHandle": null,
+      "target": "99"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "100",
+      "source": "99",
+      "sourceHandle": "99",
+      "target": "100"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.1-93",
+      "source": "100",
+      "sourceHandle": "100.1",
+      "target": "93"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.3-3",
+      "source": "100",
+      "sourceHandle": "100.7",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.6-3",
+      "source": "100",
+      "sourceHandle": "100.6",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.5-97",
+      "source": "100",
+      "sourceHandle": "100.5",
+      "target": "97"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.4-72",
+      "source": "100",
+      "sourceHandle": "100.4",
+      "target": "72"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.3-50",
+      "source": "100",
+      "sourceHandle": "100.3",
+      "target": "50"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.2-44",
+      "source": "100",
+      "sourceHandle": "100.2",
+      "target": "44"
+    }
+  ]
+}
