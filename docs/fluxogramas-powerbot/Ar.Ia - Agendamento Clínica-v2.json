@@ -1,0 +1,2390 @@
+{
+  "botName": "Ar.Ia - Agendamento Clínica v2.0",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "initialNode",
+      "data": {},
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "positionAbsolute": {
+        "x": 0,
+        "y": 0
+      },
+      "width": 224,
+      "height": 242
+    },
+    {
+      "id": "2",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"get_data_base\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "data_atual_timestamp",
+            "path": "timestamp"
+          }
+        ]
+      },
+      "position": {
+        "x": 400,
+        "y": 0
+      },
+      "positionAbsolute": {
+        "x": 400,
+        "y": 0
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "3",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/get_patient_context",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"get_patient_context\",\"telefone\":\"{{contact:phone}}\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "nome_redis",
+            "path": "nome"
+          },
+          {
+            "id": 2,
+            "name": "dob_redis",
+            "path": "data_nascimento"
+          },
+          {
+            "id": 3,
+            "name": "perfil_redis",
+            "path": "perfil"
+          },
+          {
+            "id": 4,
+            "name": "historico_redis",
+            "path": "historico"
+          }
+        ]
+      },
+      "position": {
+        "x": 800,
+        "y": 0
+      },
+      "positionAbsolute": {
+        "x": 800,
+        "y": 0
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "4",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você está em MODO DE CLASSIFICAÇÃO. Analise a mensagem do paciente e classifique a intenção.\n\nCONTEXTO REDIS (pode estar vazio):\n- Nome: {{api:nome_redis}}\n- Perfil: {{api:perfil_redis}}\n\nINTENÇÕES POSSÍVEIS (armazene em intencao_inicial):\n- novo_agendamento → quer agendar consulta\n- cancelamento → quer cancelar agendamento existente\n- reagendamento → quer mudar data/horário de agendamento existente\n- duvidas → perguntas sobre clínica, tratamentos, valores, localização\n- recepcao → quer falar com humano, dor intensa, emergência, urgência\n- encerrar → encerrou conversa, agradeceu, não precisa mais de ajuda\n- indefinido → mensagem vaga, só \"oi\", emoji, sem intenção clara\n\nREGRAS:\n- NÃO envie mensagem ao paciente. Este nó é invisível (whisper).\n- Apenas classifique e encerre imediatamente.\n- Em caso de dúvida entre intenções, prefira indefinido.",
+        "AIId": "",
+        "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
+        "interactionsLimit": 1,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": true,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "intencao_inicial",
+            "description": "Intenção detectada pelo roteador NLU"
+          }
+        ],
+        "failPath": true
+      },
+      "position": {
+        "x": 1200,
+        "y": 0
+      },
+      "positionAbsolute": {
+        "x": 1200,
+        "y": 0
+      },
+      "width": 278,
+      "height": 600
+    },
+    {
+      "id": "5",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "5.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "novo_agendamento"
+          },
+          {
+            "id": "5.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "cancelamento"
+          },
+          {
+            "id": "5.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "reagendamento"
+          },
+          {
+            "id": "5.4",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "duvidas"
+          },
+          {
+            "id": "5.5",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "recepcao"
+          },
+          {
+            "id": "5.6",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "encerrar"
+          },
+          {
+            "id": "5.7",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "indefinido"
+          },
+          {
+            "id": "5.8",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 1600,
+        "y": 0
+      },
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 0
+      },
+      "width": 278,
+      "height": 624
+    },
+    {
+      "id": "10",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana, assistente da Clínica Aria. O paciente quer agendar uma consulta.\nNÃO se apresente novamente — continue a conversa de forma natural.\n\nCONTEXTO PRÉ-CARREGADO (Redis):\n- Nome: {{api:nome_redis}}\n- Data nascimento: {{api:dob_redis}}\n- Perfil comportamental: {{api:perfil_redis}}\n- Timestamp atual: {{api:data_atual_timestamp}}\n\nSLOTS NECESSÁRIOS (colete apenas os que faltam):\n1. nome_completo — pré-preencha se nome_redis existir; confirme brevemente.\n2. primeiro_nome — extraia do nome_completo.\n3. data_nascimento — pré-preencha se dob_redis existir.\n4. queixa_principal — pergunte sobre o motivo da consulta.\n5. tipo_tratamento — INFIRA da queixa; NUNCA pergunte diretamente.\n6. data_iso — data desejada (aceite \"amanhã\", \"sexta\", etc.; converta para YYYY-MM-DD).\n7. periodo — manhã ou tarde.\n\nREGRAS DE CONVERSA:\n- Adapte o tom ao perfil_redis (direto=objetivo; inseguro=acolhedor; sem perfil=neutro-amigável).\n- Pergunte apenas o que falta. Agrupe perguntas leves quando natural.\n- NUNCA liste perguntas em formato 1,2,3.\n- Valide a data: não aceite passado. Se hoje, verifique horário vs {{api:data_atual_timestamp}}.\n- Para múltiplos pacientes: informe que atendimento é pela recepção (61 99643-1899) e encerre.\n\nSAÍDAS ESPECIAIS (armazene em motivo_encerramento e ENCERRE):\n- queixa = harmonização/botox/HOF → \"hof\"\n- urgência/dor intensa/trauma → \"urgencia\" (informe recepção 61 99643-1899)\n- idade < 16 → \"menor\" (informe recepção 61 99643-1899)\n- paciente quer humano → \"atendente\"\n\nFINALIZANDO (slots normais preenchidos):\n- Informe que vai verificar horários disponíveis e ENCERRE.",
+        "AIId": "",
+        "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "nome_completo",
+            "description": "Nome completo do paciente"
+          },
+          {
+            "id": 2,
+            "name": "primeiro_nome",
+            "description": "Primeiro nome do paciente"
+          },
+          {
+            "id": 3,
+            "name": "data_nascimento",
+            "description": "Data de nascimento YYYY-MM-DD"
+          },
+          {
+            "id": 4,
+            "name": "queixa_principal",
+            "description": "Queixa/motivo da consulta"
+          },
+          {
+            "id": 5,
+            "name": "tipo_tratamento",
+            "description": "Tipo de tratamento inferido da queixa"
+          },
+          {
+            "id": 6,
+            "name": "data_iso",
+            "description": "Data desejada ISO YYYY-MM-DD"
+          },
+          {
+            "id": 7,
+            "name": "periodo",
+            "description": "Período: manha ou tarde"
+          },
+          {
+            "id": 8,
+            "name": "motivo_encerramento",
+            "description": "hof | urgencia | menor | atendente | vazio se normal"
+          }
+        ]
+      },
+      "position": {
+        "x": 2000,
+        "y": -1200
+      },
+      "positionAbsolute": {
+        "x": 2000,
+        "y": -1200
+      },
+      "width": 278,
+      "height": 780
+    },
+    {
+      "id": "11",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "11.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:motivo_encerramento}}",
+            "secondValue": "hof"
+          },
+          {
+            "id": "11.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:motivo_encerramento}}",
+            "secondValue": "urgencia"
+          },
+          {
+            "id": "11.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:motivo_encerramento}}",
+            "secondValue": "menor"
+          },
+          {
+            "id": "11.4",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:motivo_encerramento}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "11.5",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2400,
+        "y": -1200
+      },
+      "positionAbsolute": {
+        "x": 2400,
+        "y": -1200
+      },
+      "width": 278,
+      "height": 420
+    },
+    {
+      "id": "12",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 2800,
+        "y": -1200
+      },
+      "positionAbsolute": {
+        "x": 2800,
+        "y": -1200
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "16",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"verificacao\",\"telefone\":\"{{contact:phone}}\",\"data_iso\":\"{{gpt:data_iso}}\",\"periodo\":\"{{gpt:periodo}}\",\"tipo_tratamento\":\"{{gpt:tipo_tratamento}}\",\"profissional_preferido\":\"{{gpt:profissional_preferido}}\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success",
+            "path": "success"
+          },
+          {
+            "id": 2,
+            "name": "horarios_disponiveis",
+            "path": "horarios_disponiveis"
+          },
+          {
+            "id": 3,
+            "name": "agenda_utilizada",
+            "path": "agenda_utilizada"
+          }
+        ]
+      },
+      "position": {
+        "x": 2800,
+        "y": -1600
+      },
+      "positionAbsolute": {
+        "x": 2800,
+        "y": -1600
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "17",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "17.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "17.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success}}",
+            "secondValue": "false"
+          },
+          {
+            "id": "17.3",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 3200,
+        "y": -1600
+      },
+      "positionAbsolute": {
+        "x": 3200,
+        "y": -1600
+      },
+      "width": 278,
+      "height": 284
+    },
+    {
+      "id": "18",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana. O paciente está escolhendo o horário da consulta.\nNÃO se apresente e NÃO execute o agendamento nesta etapa.\n\nCONTEXTO:\n- Nome: {{gpt:primeiro_nome}}\n- Tratamento: {{gpt:tipo_tratamento}}\n- Data (ISO): {{gpt:data_iso}}\n- Período: {{gpt:periodo}}\n- Horários disponíveis: {{api:horarios_disponiveis}}\n- Timestamp: {{api:data_atual_timestamp}}\n\nAPRESENTAÇÃO DE HORÁRIOS:\n- Apresente de forma conversacional, não em lista formal.\n  Exemplo: \"{{gpt:primeiro_nome}}, tenho 14h, 14h30 e 15h disponíveis. Qual fica melhor?\"\n- Se hoje: filtre horários já passados comparando com timestamp atual.\n- Se lista vazia: informe com empatia e ofereça: trocar data, trocar período, ou falar com atendente.\n\nREGRAS DE SELEÇÃO:\n- Aceite qualquer formato (\"2h\", \"2 da tarde\", \"14\", \"14:00\") → normalize para HH:MM.\n- Implante Facial: apenas \"renata\" está autorizada. Verifique profissionais_disponiveis.\n- Profissional preferido ({{gpt:profissional_preferido}}): respeite se disponível.\n- Caso geral: não selecione profissional (backend decide).\n- Armazene horario_escolhido e, se aplicável, profissional_escolhido.\n\nCONFIRMAÇÃO:\n- Resuma de forma fluida (não em recibo de tópicos).\n  Exemplo: \"Ótimo! Deixo confirmado para [data] às [horário], certo?\"\n- Aguarde confirmação explícita.\n\nSAÍDAS:\n- Paciente confirma → confirmacao_final = \"confirmado\", ENCERRE.\n- Quer nova data/período → redirecionamento_agendamento = \"triagem\", ENCERRE.\n- Quer humano → redirecionamento_agendamento = \"atendente\", ENCERRE.",
+        "AIId": "",
+        "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "horario_escolhido",
+            "description": "Horário escolhido HH:MM"
+          },
+          {
+            "id": 2,
+            "name": "profissional_escolhido",
+            "description": "Nome do profissional se selecionado"
+          },
+          {
+            "id": 3,
+            "name": "confirmacao_final",
+            "description": "confirmado quando paciente confirmar"
+          },
+          {
+            "id": 4,
+            "name": "redirecionamento_agendamento",
+            "description": "triagem | atendente"
+          }
+        ]
+      },
+      "position": {
+        "x": 3600,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 3600,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 700
+    },
+    {
+      "id": "19",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "19.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento_agendamento}}",
+            "secondValue": "triagem"
+          },
+          {
+            "id": "19.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento_agendamento}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "19.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:confirmacao_final}}",
+            "secondValue": "confirmado"
+          },
+          {
+            "id": "19.4",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 4000,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 4000,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 352
+    },
+    {
+      "id": "20",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"agendamento\",\"paciente\":{\"nome_completo\":\"{{gpt:nome_completo}}\",\"telefone\":\"{{contact:phone}}\"},\"consulta\":{\"data_iso\":\"{{gpt:data_iso}}\",\"periodo\":\"{{gpt:periodo}}\",\"horario\":\"{{gpt:horario_escolhido}}\",\"tipo_tratamento\":\"{{gpt:tipo_tratamento}}\",\"queixa_principal\":\"{{gpt:queixa_principal}}\"},\"contexto_verificacao\":{\"agenda_utilizada\":\"{{api:agenda_utilizada}}\",\"profissional_escolhido\":\"{{gpt:profissional_escolhido}}\"}}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success_agendamento",
+            "path": "success"
+          },
+          {
+            "id": 2,
+            "name": "mensagem_api_n8n",
+            "path": "message"
+          },
+          {
+            "id": 3,
+            "name": "status_consulta",
+            "path": "status"
+          },
+          {
+            "id": 4,
+            "name": "nome_dentista_consulta",
+            "path": "summary"
+          }
+        ]
+      },
+      "position": {
+        "x": 4400,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 4400,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "21",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "21.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:status_consulta}}",
+            "secondValue": "confirmed"
+          },
+          {
+            "id": "21.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success_agendamento}}",
+            "secondValue": "false"
+          },
+          {
+            "id": "21.3",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 4800,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 4800,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 284
+    },
+    {
+      "id": "22",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "Você é o assistente da Clínica Aria. Gere a mensagem final de confirmação de consulta para WhatsApp.\n\nDADOS:\n- Paciente: {{gpt:nome_completo}}\n- Data formatada: {{gpt:data_formatada}}\n- Horário: {{gpt:horario_escolhido}}\n- Resumo evento (extrai nome do dentista após hífen): {{api:nome_dentista_consulta}}\n\nREGRAS:\n- Use negrito WhatsApp (*texto*) para data e horário.\n- Extraia APENAS o nome do profissional do campo resumo (ex: \"Consulta [João - Dra. Ana]\" → \"Dra. Ana\").\n- Mencione que a clínica entrará em contato 1 dia antes como lembrete.\n- Tom caloroso e profissional. Máx 6 linhas. Máx 1 emoji. Apenas em Português.\n- Não retorne JSON. Gere apenas a mensagem pronta para envio.",
+        "AIId": "gpt-4o",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 5200,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 5200,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 480
+    },
+    {
+      "id": "23",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana. A consulta já foi confirmada e o paciente acabou de receber a mensagem de confirmação.\n\nPRIMEIRA MENSAGEM:\n\"{{gpt:primeiro_nome}}, ficou alguma dúvida sobre a Clínica Aria ou sobre como funciona sua consulta?\"\n\nSE TIVER DÚVIDA: Esclareça usando base de conhecimento. Após responder, sugira o Instagram.\nSE NÃO TIVER DÚVIDA: Envie \"Perfeito 😊\" e na linha seguinte o link do Instagram (da base de conhecimento).\n\nApós enviar o link ou responder a última dúvida: ENCERRE imediatamente.",
+        "AIId": "",
+        "assistantId": "asst_uWgjpce7lr8nTKrIK8Aj3vxA",
+        "interactionsLimit": 50,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 5600,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 5600,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 560
+    },
+    {
+      "id": "24",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 6000,
+        "y": -1400
+      },
+      "positionAbsolute": {
+        "x": 6000,
+        "y": -1400
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "30",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"verificar_evento_id\",\"telefone\":\"{{contact:phone}}\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "existe_agendamento_cancelar",
+            "path": "existe_agendamento"
+          },
+          {
+            "id": 2,
+            "name": "data_hora_agendamento_cancelar",
+            "path": "data_iso"
+          },
+          {
+            "id": 3,
+            "name": "sumario_consulta_cancelar",
+            "path": "summary"
+          },
+          {
+            "id": 4,
+            "name": "calendar_id_cancelar",
+            "path": "calendar_id"
+          },
+          {
+            "id": 5,
+            "name": "event_id_cancelar",
+            "path": "event_id"
+          }
+        ]
+      },
+      "position": {
+        "x": 2000,
+        "y": 600
+      },
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 600
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "31",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "31.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:existe_agendamento_cancelar}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "31.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2400,
+        "y": 600
+      },
+      "positionAbsolute": {
+        "x": 2400,
+        "y": 600
+      },
+      "width": 278,
+      "height": 216
+    },
+    {
+      "id": "32",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Não encontrei nenhum agendamento associado ao seu contato. Caso queira agendar uma nova consulta, posso te ajudar 😊",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 2800,
+        "y": 600
+      },
+      "positionAbsolute": {
+        "x": 2800,
+        "y": 600
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "33",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana. O paciente quer cancelar uma consulta existente.\nContinue a conversa naturalmente — não se apresente novamente.\n\nCONSULTA ENCONTRADA:\n- Data/Hora: {{api:data_hora_agendamento_cancelar}}\n- Resumo: {{api:sumario_consulta_cancelar}}\n\nMISSÃO:\n1. Apresente os dados da consulta de forma natural e pergunte se é a consulta correta.\n2. Ao confirmar: pergunte o motivo do cancelamento de forma empática.\n3. Interprete o motivo e armazene resumo em motivo_cancelamento.\n4. Pergunte explicitamente se confirma o cancelamento.\n\nSE CONFIRMAR CANCELAMENTO:\n- Armazene confirmacao_cancelamento = \"sim\" e ENCERRE imediatamente.\n\nSE DESISTIR:\n- Responda: \"Perfeito, sua consulta permanece confirmada. Qualquer coisa estou aqui!\"\n- Armazene confirmacao_cancelamento = \"nao\" e ENCERRE.",
+        "AIId": "",
+        "assistantId": "asst_R106DbQu9AvR5Q90FeH2Urnc",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "motivo_cancelamento",
+            "description": "Motivo do cancelamento resumido"
+          },
+          {
+            "id": 2,
+            "name": "confirmacao_cancelamento",
+            "description": "sim | nao"
+          }
+        ],
+        "failPath": true,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 2800,
+        "y": 200
+      },
+      "positionAbsolute": {
+        "x": 2800,
+        "y": 200
+      },
+      "width": 278,
+      "height": 600
+    },
+    {
+      "id": "34",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "34.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:confirmacao_cancelamento}}",
+            "secondValue": "sim"
+          },
+          {
+            "id": "34.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 3200,
+        "y": 200
+      },
+      "positionAbsolute": {
+        "x": 3200,
+        "y": 200
+      },
+      "width": 278,
+      "height": 216
+    },
+    {
+      "id": "35",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"cancelamento\",\"telefone\":\"{{contact:phone}}\",\"calendar_id\":\"{{api:calendar_id_cancelar}}\",\"event_id\":\"{{api:event_id_cancelar}}\",\"motivo_cancelamento\":\"{{gpt:motivo_cancelamento}}\"}",
+        "apiVariables": []
+      },
+      "position": {
+        "x": 3600,
+        "y": 200
+      },
+      "positionAbsolute": {
+        "x": 3600,
+        "y": 200
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "36",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Sua consulta foi cancelada com sucesso. Se precisar reagendar ou tiver dúvidas, estamos por aqui. A Clínica Aria agradece! 😊",
+        "sendAsWhisper": false,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 4000,
+        "y": 200
+      },
+      "positionAbsolute": {
+        "x": 4000,
+        "y": 200
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "37",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 4400,
+        "y": 200
+      },
+      "positionAbsolute": {
+        "x": 4400,
+        "y": 200
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "40",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"verificar_evento_id\",\"telefone\":\"{{contact:phone}}\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "existe_agendamento_reagendamento",
+            "path": "existe_agendamento"
+          },
+          {
+            "id": 2,
+            "name": "data_hora_agendamento_reagendamento",
+            "path": "data_iso"
+          },
+          {
+            "id": 3,
+            "name": "sumario_consulta_reagendamento",
+            "path": "summary"
+          },
+          {
+            "id": 4,
+            "name": "calendar_id_reagendamento",
+            "path": "calendar_id"
+          },
+          {
+            "id": 5,
+            "name": "event_id_reagendamento",
+            "path": "event_id"
+          },
+          {
+            "id": 6,
+            "name": "nome_completo_reagendamento",
+            "path": "nome_completo"
+          }
+        ]
+      },
+      "position": {
+        "x": 2000,
+        "y": 1600
+      },
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 1600
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "41",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "41.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:existe_agendamento_reagendamento}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "41.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2400,
+        "y": 1600
+      },
+      "positionAbsolute": {
+        "x": 2400,
+        "y": 1600
+      },
+      "width": 278,
+      "height": 216
+    },
+    {
+      "id": "42",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Não encontrei nenhum agendamento associado ao seu contato. Se desejar agendar uma nova consulta, posso te ajudar 😊",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 2800,
+        "y": 1600
+      },
+      "positionAbsolute": {
+        "x": 2800,
+        "y": 1600
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "43b",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"get_data_base\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "data_atual_timestamp_rea",
+            "path": "timestamp"
+          }
+        ]
+      },
+      "position": {
+        "x": 2800,
+        "y": 2000
+      },
+      "positionAbsolute": {
+        "x": 2800,
+        "y": 2000
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "43",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana. O paciente quer reagendar uma consulta.\nContinue a conversa naturalmente — não se apresente novamente.\n\nCONSULTA ATUAL:\n- Data/Hora: {{api:data_hora_agendamento_reagendamento}}\n- Resumo: {{api:sumario_consulta_reagendamento}}\n- Nome completo: {{api:nome_completo_reagendamento}}\n- Data atual: {{api:data_atual_timestamp}}\n\nMISSÃO:\n1. Apresente a consulta atual de forma natural e confirme se é a correta.\n2. Pergunte para qual nova data o paciente deseja reagendar.\n3. Pergunte o período preferido (manhã ou tarde).\n4. Não peça tudo de uma vez — seja conversacional.\n\nREGRAS:\n- Converta datas como \"segunda\", \"dia 15\" para YYYY-MM-DD.\n- Não aceite datas passadas.\n- Não mencione sistemas internos.\n\nFINALIZANDO:\n- Armazene nova_data_iso e novo_periodo, ENCERRE.",
+        "AIId": "",
+        "assistantId": "asst_HJH4P3fLV2w4rcYNMWASpHfX",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "nova_data_iso",
+            "description": "Nova data ISO YYYY-MM-DD"
+          },
+          {
+            "id": 2,
+            "name": "novo_periodo",
+            "description": "Novo período: manha ou tarde"
+          }
+        ],
+        "failPath": true,
+        "intervalSettings": {
+          "enabled": true,
+          "interval": 2
+        }
+      },
+      "position": {
+        "x": 3200,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 3200,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 640
+    },
+    {
+      "id": "44",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"verificacao\",\"telefone\":\"{{contact:phone}}\",\"data_iso\":\"{{gpt:nova_data_iso}}\",\"periodo\":\"{{gpt:novo_periodo}}\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success_reagendamento",
+            "path": "success"
+          },
+          {
+            "id": 2,
+            "name": "novos_horarios_disponiveis",
+            "path": "horarios_disponiveis"
+          }
+        ]
+      },
+      "position": {
+        "x": 3600,
+        "y": 2000
+      },
+      "positionAbsolute": {
+        "x": 3600,
+        "y": 2000
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "45",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana. O paciente está escolhendo novo horário para reagendamento.\nContinue naturalmente — não se apresente novamente.\n\nCONTEXTO:\n- Nome: {{api:nome_completo_reagendamento}}\n- Nova data: {{gpt:nova_data_iso}}\n- Novo período: {{gpt:novo_periodo}}\n- Novos horários disponíveis: {{api:novos_horarios_disponiveis}}\n\nSiga as mesmas regras do agente de agendamento:\n- Apresente horários conversacionalmente.\n- Se lista vazia: informe e ofereça alternativas.\n- Confirme com resumo fluido antes de encerrar.\n\nSAÍDAS:\n- Confirma → confirmacao_rea = \"confirmado\", armazene horario_escolhido_rea, ENCERRE.\n- Quer mudar data → redirecionamento_rea = \"triagem\", ENCERRE.\n- Quer humano → redirecionamento_rea = \"atendente\", ENCERRE.",
+        "AIId": "",
+        "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "horario_escolhido_rea",
+            "description": "Horário escolhido para reagendamento HH:MM"
+          },
+          {
+            "id": 2,
+            "name": "confirmacao_rea",
+            "description": "confirmado quando paciente confirmar"
+          },
+          {
+            "id": 3,
+            "name": "redirecionamento_rea",
+            "description": "triagem | atendente"
+          }
+        ]
+      },
+      "position": {
+        "x": 4000,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 4000,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 680
+    },
+    {
+      "id": "46",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "46.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento_rea}}",
+            "secondValue": "triagem"
+          },
+          {
+            "id": "46.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento_rea}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "46.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:confirmacao_rea}}",
+            "secondValue": "confirmado"
+          },
+          {
+            "id": "46.4",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 4400,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 4400,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 352
+    },
+    {
+      "id": "47",
+      "type": "apiNode",
+      "data": {
+        "method": "POST",
+        "url": "http://n8n.clinicaaria.com.br/webhook/tool_agendamento",
+        "headers": [
+          {
+            "id": 1,
+            "header": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "params": [],
+        "body": "{\"evento\":\"reagendamento\",\"telefone\":\"{{contact:phone}}\",\"calendar_id\":\"{{api:calendar_id_reagendamento}}\",\"event_id\":\"{{api:event_id_reagendamento}}\",\"nova_data_iso\":\"{{gpt:nova_data_iso}}\",\"horario_consulta\":\"{{gpt:horario_escolhido_rea}}\"}",
+        "apiVariables": [
+          {
+            "id": 1,
+            "name": "success_consulta_reagendada",
+            "path": "success"
+          }
+        ]
+      },
+      "position": {
+        "x": 4800,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 4800,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 245
+    },
+    {
+      "id": "48",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "48.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{api:success_consulta_reagendada}}",
+            "secondValue": "true"
+          },
+          {
+            "id": "48.2",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 5200,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 5200,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 216
+    },
+    {
+      "id": "49",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "Gere mensagem de confirmação de REAGENDAMENTO para WhatsApp.\nNome: {{api:nome_completo_reagendamento}}\nNova data: {{gpt:nova_data_iso}} (converta para DD/MM/YYYY)\nNovo horário: {{gpt:horario_escolhido_rea}}\n\nUse *negrito* para data e horário. Informe que a clínica ligará 1 dia antes.\nTom acolhedor e profissional. Máx 6 linhas. Apenas em Português. Não retorne JSON.",
+        "AIId": "gpt-4o-mini",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 5600,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 5600,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 480
+    },
+    {
+      "id": "50",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 6000,
+        "y": 1800
+      },
+      "positionAbsolute": {
+        "x": 6000,
+        "y": 1800
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "60",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana, assistente consultiva da Clínica Aria.\nO paciente tem dúvidas e ainda não decidiu agendar.\n\nOBJETIVO:\n- Entender o contexto do paciente.\n- Esclarecer dúvidas usando a base de conhecimento (File Search).\n- Construir confiança. NÃO pressione para agendamento.\n- Faça UMA pergunta estratégica por vez.\n\nCONHECIMENTO: Use SEMPRE File Search para informações institucionais (endereço, valores, convênios, tratamentos). Nunca invente.\n\nDETECÇÃO DE INTENÇÃO:\nSe o paciente demonstrar intenção clara de agendar, cancelar, reagendar ou encerrar:\n- Armazene em intencao_detectada o valor: agendamento | cancelamento | reagendamento | encerrar\n- Peça confirmação: \"Posso te direcionar para [ação]?\"\n- Se confirmado: responda \"Perfeito, vou te direcionar agora.\" e ENCERRE imediatamente.",
+        "AIId": "",
+        "assistantId": "asst_uWgjpce7lr8nTKrIK8Aj3vxA",
+        "interactionsLimit": 50,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "intencao_detectada",
+            "description": "agendamento | cancelamento | reagendamento | encerrar"
+          }
+        ]
+      },
+      "position": {
+        "x": 2000,
+        "y": 2800
+      },
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 2800
+      },
+      "width": 278,
+      "height": 700
+    },
+    {
+      "id": "61",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "61.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "agendamento"
+          },
+          {
+            "id": "61.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "cancelamento"
+          },
+          {
+            "id": "61.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "reagendamento"
+          },
+          {
+            "id": "61.4",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "encerrar"
+          },
+          {
+            "id": "61.5",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2400,
+        "y": 2800
+      },
+      "positionAbsolute": {
+        "x": 2400,
+        "y": 2800
+      },
+      "width": 278,
+      "height": 420
+    },
+    {
+      "id": "70",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana. O paciente quer falar com a recepção ou tem uma situação urgente.\n\nPRIMEIRA MENSAGEM OBRIGATÓRIA:\n\"Você pode falar diretamente com nossa recepção pelo WhatsApp:\nRecepção Aria: 61 99643-1899\n\nSe preferir, também posso esclarecer qualquer dúvida aqui.\"\n\nCONDUTAS:\n- Responda dúvidas institucionais via File Search.\n- Se paciente não tem avaliação: ofereça agendar.\n- Detectar intenção de agendar → armazene intencao_detectada = \"agendamento\" e ENCERRE.\n- Paciente pedir humano diretamente → armazene direcionamento = \"atendente\" e ENCERRE.\n- Encerrar → armazene direcionamento = \"encerrar\" e ENCERRE.",
+        "AIId": "",
+        "assistantId": "asst_uWgjpce7lr8nTKrIK8Aj3vxA",
+        "interactionsLimit": 50,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "intencao_detectada",
+            "description": "agendamento se quiser agendar"
+          },
+          {
+            "id": 2,
+            "name": "direcionamento",
+            "description": "atendente | encerrar"
+          }
+        ]
+      },
+      "position": {
+        "x": 2000,
+        "y": 3600
+      },
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 3600
+      },
+      "width": 278,
+      "height": 700
+    },
+    {
+      "id": "71",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "71.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "agendamento"
+          },
+          {
+            "id": "71.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:direcionamento}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "71.3",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2400,
+        "y": 3600
+      },
+      "positionAbsolute": {
+        "x": 2400,
+        "y": 3600
+      },
+      "width": 278,
+      "height": 284
+    },
+    {
+      "id": "80",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "mission",
+        "prompt": "Você é Ariana, assistente virtual da Clínica Aria.\n\nCONTEXTO:\n- Nome Redis: {{api:nome_redis}}\n- Perfil Redis: {{api:perfil_redis}}\n- Timestamp: {{api:data_atual_timestamp}}\n\nMISSÃO:\n1. Se nome_redis existir: cumprimente pelo nome (\"Olá de novo, [nome]! 😊\").\n   Senão: \"Olá! Sou a Ariana, assistente da Clínica Aria 😊\"\n2. Pergunte de forma natural como pode ajudar.\n3. Leia a resposta e classifique a intenção. Armazene em intencao_inicial:\n   novo_agendamento | cancelamento | reagendamento | duvidas | recepcao | encerrar | indefinido\n4. Responda brevemente (\"Perfeito, vou te ajudar!\") e ENCERRE imediatamente.\n\nMáximo 2 interações. Tom: caloroso, breve, natural. Máx 1 emoji.",
+        "AIId": "",
+        "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
+        "interactionsLimit": 2,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": false,
+        "missionVariables": [
+          {
+            "id": 1,
+            "name": "intencao_inicial",
+            "description": "Intenção detectada pelo agente de boas-vindas"
+          }
+        ]
+      },
+      "position": {
+        "x": 2000,
+        "y": -2400
+      },
+      "positionAbsolute": {
+        "x": 2000,
+        "y": -2400
+      },
+      "width": 278,
+      "height": 620
+    },
+    {
+      "id": "81",
+      "type": "conditionalNode",
+      "data": {
+        "conditions": [
+          {
+            "id": "81.1",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "novo_agendamento"
+          },
+          {
+            "id": "81.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "cancelamento"
+          },
+          {
+            "id": "81.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "reagendamento"
+          },
+          {
+            "id": "81.4",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "duvidas"
+          },
+          {
+            "id": "81.5",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "recepcao"
+          },
+          {
+            "id": "81.6",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "encerrar"
+          },
+          {
+            "id": "81.7",
+            "type": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 2400,
+        "y": -2400
+      },
+      "positionAbsolute": {
+        "x": 2400,
+        "y": -2400
+      },
+      "width": 278,
+      "height": 556
+    },
+    {
+      "id": "90",
+      "type": "openAINode",
+      "data": {
+        "apiKey": "",
+        "type": "prompt",
+        "prompt": "Gere um BRIEFING INTERNO para o atendente humano que assumirá esta conversa.\nREGRA: Escreva APENAS em Português Brasileiro. Nunca em Inglês.\nUse SOMENTE as variáveis fornecidas. Se vazio/nulo escreva \"Não informado\".\n\nVARIÁVEIS DISPONÍVEIS:\n- {{gpt:nome_completo}} | {{gpt:primeiro_nome}} | {{gpt:data_nascimento}}\n- {{gpt:tipo_tratamento}} | {{gpt:queixa_principal}} | {{gpt:data_iso}} | {{gpt:periodo}}\n- {{gpt:horario_escolhido}} | {{gpt:intencao_detectada}} | {{api:mensagem_api_n8n}}\n- {{api:nome_redis}} | {{api:perfil_redis}}\n\nESTRUTURA OBRIGATÓRIA:\n🔎 DADOS DO PACIENTE\n- Nome completo:\n- Tratamento sugerido:\n- Queixa principal:\n- Data/período desejado:\n- Horário escolhido:\n\n🧠 RESUMO DO CONTEXTO (máx. 5 linhas)\nO que foi feito, o que falta, etapa de interrupção.\n\n📊 PERFIL COMPORTAMENTAL\nClassifique: Direto | Objetivo | Inseguro | Indeciso | Emocional (justifique em 2 linhas).\n\n⚠️ MOTIVO DA TRANSFERÊNCIA\nBaseie-se em {{api:mensagem_api_n8n}}. Se vazio: \"Instabilidade operacional no fluxo automatizado.\"\n",
+        "AIId": "gpt-4",
+        "assistantId": "",
+        "interactionsLimit": null,
+        "exitKeyword": null,
+        "variableField": "",
+        "sendAsWhisper": true,
+        "missionVariables": []
+      },
+      "position": {
+        "x": 6400,
+        "y": -200
+      },
+      "positionAbsolute": {
+        "x": 6400,
+        "y": -200
+      },
+      "width": 278,
+      "height": 580
+    },
+    {
+      "id": "91",
+      "type": "transferNode",
+      "data": {
+        "transferType": "user",
+        "selectedUser": "134429"
+      },
+      "position": {
+        "x": 6800,
+        "y": -200
+      },
+      "positionAbsolute": {
+        "x": 6800,
+        "y": -200
+      },
+      "width": 278,
+      "height": 239
+    },
+    {
+      "id": "92",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 6400,
+        "y": 200
+      },
+      "positionAbsolute": {
+        "x": 6400,
+        "y": 200
+      },
+      "width": 278,
+      "height": 114
+    }
+  ],
+  "edges": [
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e2-3",
+      "source": "2",
+      "target": "3",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e3-4",
+      "source": "3",
+      "target": "4",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e4-5",
+      "source": "4",
+      "target": "5",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-10",
+      "source": "5",
+      "target": "10",
+      "sourceHandle": "5.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-30",
+      "source": "5",
+      "target": "30",
+      "sourceHandle": "5.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-40",
+      "source": "5",
+      "target": "40",
+      "sourceHandle": "5.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-60",
+      "source": "5",
+      "target": "60",
+      "sourceHandle": "5.4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-70",
+      "source": "5",
+      "target": "70",
+      "sourceHandle": "5.5"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-92",
+      "source": "5",
+      "target": "92",
+      "sourceHandle": "5.6"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-80",
+      "source": "5",
+      "target": "80",
+      "sourceHandle": "5.7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e5-80b",
+      "source": "5",
+      "target": "80",
+      "sourceHandle": "5.8"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e10-11",
+      "source": "10",
+      "target": "11",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e11-12",
+      "source": "11",
+      "target": "12",
+      "sourceHandle": "11.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e11-12b",
+      "source": "11",
+      "target": "12",
+      "sourceHandle": "11.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e11-12c",
+      "source": "11",
+      "target": "12",
+      "sourceHandle": "11.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e11-90",
+      "source": "11",
+      "target": "90",
+      "sourceHandle": "11.4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e11-16",
+      "source": "11",
+      "target": "16",
+      "sourceHandle": "11.5"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e16-17",
+      "source": "16",
+      "target": "17",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e17-18",
+      "source": "17",
+      "target": "18",
+      "sourceHandle": "17.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e17-18b",
+      "source": "17",
+      "target": "18",
+      "sourceHandle": "17.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e17-90",
+      "source": "17",
+      "target": "90",
+      "sourceHandle": "17.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e18-19",
+      "source": "18",
+      "target": "19",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e19-10",
+      "source": "19",
+      "target": "10",
+      "sourceHandle": "19.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e19-90",
+      "source": "19",
+      "target": "90",
+      "sourceHandle": "19.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e19-20",
+      "source": "19",
+      "target": "20",
+      "sourceHandle": "19.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e19-18",
+      "source": "19",
+      "target": "18",
+      "sourceHandle": "19.4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e20-21",
+      "source": "20",
+      "target": "21",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e21-22",
+      "source": "21",
+      "target": "22",
+      "sourceHandle": "21.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e21-90a",
+      "source": "21",
+      "target": "90",
+      "sourceHandle": "21.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e21-90b",
+      "source": "21",
+      "target": "90",
+      "sourceHandle": "21.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e22-23",
+      "source": "22",
+      "target": "23",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e23-24",
+      "source": "23",
+      "target": "24",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e30-31",
+      "source": "30",
+      "target": "31",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e31-33",
+      "source": "31",
+      "target": "33",
+      "sourceHandle": "31.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e31-32",
+      "source": "31",
+      "target": "32",
+      "sourceHandle": "31.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e32-80",
+      "source": "32",
+      "target": "80",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e33-34",
+      "source": "33",
+      "target": "34",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e34-35",
+      "source": "34",
+      "target": "35",
+      "sourceHandle": "34.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e34-37",
+      "source": "34",
+      "target": "37",
+      "sourceHandle": "34.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e35-36",
+      "source": "35",
+      "target": "36",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e36-37",
+      "source": "36",
+      "target": "37",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e40-41",
+      "source": "40",
+      "target": "41",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e41-43b",
+      "source": "41",
+      "target": "43b",
+      "sourceHandle": "41.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e41-42",
+      "source": "41",
+      "target": "42",
+      "sourceHandle": "41.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e42-80",
+      "source": "42",
+      "target": "80",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e43b-43",
+      "source": "43b",
+      "target": "43",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e43-44",
+      "source": "43",
+      "target": "44",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e44-45",
+      "source": "44",
+      "target": "45",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e45-46",
+      "source": "45",
+      "target": "46",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e46-43",
+      "source": "46",
+      "target": "43",
+      "sourceHandle": "46.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e46-90",
+      "source": "46",
+      "target": "90",
+      "sourceHandle": "46.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e46-47",
+      "source": "46",
+      "target": "47",
+      "sourceHandle": "46.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e46-45",
+      "source": "46",
+      "target": "45",
+      "sourceHandle": "46.4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e47-48",
+      "source": "47",
+      "target": "48",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e48-49",
+      "source": "48",
+      "target": "49",
+      "sourceHandle": "48.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e48-90",
+      "source": "48",
+      "target": "90",
+      "sourceHandle": "48.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e49-50",
+      "source": "49",
+      "target": "50",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e60-61",
+      "source": "60",
+      "target": "61",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e61-10",
+      "source": "61",
+      "target": "10",
+      "sourceHandle": "61.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e61-30",
+      "source": "61",
+      "target": "30",
+      "sourceHandle": "61.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e61-40",
+      "source": "61",
+      "target": "40",
+      "sourceHandle": "61.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e61-92",
+      "source": "61",
+      "target": "92",
+      "sourceHandle": "61.4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e61-92b",
+      "source": "61",
+      "target": "92",
+      "sourceHandle": "61.5"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e70-71",
+      "source": "70",
+      "target": "71",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e71-10",
+      "source": "71",
+      "target": "10",
+      "sourceHandle": "71.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e71-90",
+      "source": "71",
+      "target": "90",
+      "sourceHandle": "71.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e71-92",
+      "source": "71",
+      "target": "92",
+      "sourceHandle": "71.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e80-81",
+      "source": "80",
+      "target": "81",
+      "sourceHandle": null
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-10",
+      "source": "81",
+      "target": "10",
+      "sourceHandle": "81.1"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-30",
+      "source": "81",
+      "target": "30",
+      "sourceHandle": "81.2"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-40",
+      "source": "81",
+      "target": "40",
+      "sourceHandle": "81.3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-60",
+      "source": "81",
+      "target": "60",
+      "sourceHandle": "81.4"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-70",
+      "source": "81",
+      "target": "70",
+      "sourceHandle": "81.5"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-92",
+      "source": "81",
+      "target": "92",
+      "sourceHandle": "81.6"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e81-92b",
+      "source": "81",
+      "target": "92",
+      "sourceHandle": "81.7"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "e90-91",
+      "source": "90",
+      "target": "91",
+      "sourceHandle": null
+    }
+  ]
+}

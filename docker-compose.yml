@@ -26,6 +26,48 @@ services:
       - aria-network
     restart: always
 
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9000:9000"
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - aria-network
+
+  evolution-api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.evolution
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - aria-network
+    depends_on:
+      - redis
+      - evolution-postgres
+
+  evolution-postgres:
+    image: postgres:16-alpine
+    container_name: evolution-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: evolution_pass
+      POSTGRES_DB: evolution
+    volumes:
+      - evolution_pgdata:/var/lib/postgresql/data
+    networks:
+      - aria-network
+
   redis:
     image: redis:7-alpine
     container_name: redis-aria
@@ -37,13 +79,13 @@ services:
     networks:
       - aria-network
 
-
-
 volumes:
   n8n_data:
   chroma_data:
   redis_data:
-
+  evolution_instances:
+  evolution_pgdata:
+  portainer_data:
 
 
 networks:

@@ -9,12 +9,12 @@
         "x": -5003.243608724028,
         "y": -732.0586602975059
       },
-      "width": 224,
-      "height": 242,
       "positionAbsolute": {
         "x": -5003.243608724028,
         "y": -732.0586602975059
-      }
+      },
+      "width": 224,
+      "height": 242
     },
     {
       "id": "3",
@@ -57,12 +57,12 @@
         "x": -3322.65982842766,
         "y": -562.853567067383
       },
-      "width": 278,
-      "height": 750,
       "positionAbsolute": {
         "x": -3322.65982842766,
         "y": -562.853567067383
-      }
+      },
+      "width": 278,
+      "height": 750
     },
     {
       "id": "9",
@@ -78,7 +78,7 @@
           }
         ],
         "params": [],
-        "body": "{\n  \"evento\": \"verificacao\",\n  \"telefone\": \"5561999887766\",\n  \"data_iso\": \"{{gpt:data_iso}}\",\n  \"periodo\": \"{{gpt:periodo}}\"\n}",
+        "body": "{\n  \"evento\": \"verificacao\",\n  \"telefone\": \"5561999887766\",\n  \"data_iso\": \"{{gpt:data_iso}}\",\n  \"periodo\": \"{{gpt:periodo}}\",\n  \"tipo_tratamento\": \"{{gpt:tipo_tratamento}}\",\n  \"profissional_preferido\": \"{{gpt:profissional_preferido}}\"\n}",
         "apiVariables": [
           {
             "id": 8,
@@ -89,6 +89,11 @@
             "id": 9,
             "name": "horarios_disponiveis",
             "path": "horarios_disponiveis"
+          },
+          {
+            "id": 11,
+            "name": "agenda_utilizada",
+            "path": "agenda_utilizada"
           }
         ]
       },
@@ -96,12 +101,12 @@
         "x": 1397.612790443583,
         "y": -1231.20552492074
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 1397.612790443583,
         "y": -1231.20552492074
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "11",
@@ -118,12 +123,12 @@
         "x": 1020.104537708952,
         "y": -1235.270857871092
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 1020.104537708952,
         "y": -1235.270857871092
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "21",
@@ -131,7 +136,7 @@
       "data": {
         "apiKey": "",
         "type": "mission",
-        "prompt": "CURRENT CONTEXT\n\nYou are in the scheduling triage stage.\nThe flow is strictly sequential and deterministic.\n\nYou must complete the following steps in exact order.\nYou cannot skip, merge or reorder steps.\n\n--------------------------------------------------\nMANDATORY STEP ORDER\n\n1) Full name validation\n2) Date of birth + age validation\n3) Strategic question about knowing the clinic\n4) Chief complaint extraction + treatment definition\n5) Desired appointment date validation\n6) Period selection\n\nYou may only advance after the current step is fully validated.\n\n--------------------------------------------------\nSTEP 1 — FULL NAME VALIDATION\n\nRequest full name.\n\nValidation rules:\n- Must contain at least two words separated by space.\n- Each word must have at least 2 characters.\n- Do not accept initials, abbreviations, nicknames or generic words.\n\nIf invalid:\nRequest full name again.\n\nAfter valid:\n- Store in \"nome_completo\"\n- Extract first name for conversational use\n\n--------------------------------------------------\nSTEP 2 — DATE OF BIRTH + AGE VALIDATION\n\nAccept multiple date formats.\nConvert to YYYY-MM-DD.\nStore in \"data_nascimento\".\n\nCalculate age using {{api:data_atual_timestamp}}.\n\nIf age < 16:\n- Store numeric value in \"idade_paciente\"\n- Stop triage\n- Provide minor instruction message\n- Terminate execution\n\nIf age ≥ 16:\nProceed.\n\n--------------------------------------------------\nSTEP 3 — STRATEGIC QUESTION\n\nAsk if the patient already knows the clinic or wants a brief explanation.\n\nIf explanation is requested:\nProvide brief institutional explanation.\nThen proceed.\n\n--------------------------------------------------\nSTEP 4 — CHIEF COMPLAINT + TREATMENT DEFINITION\n\nAsk for main complaint.\n\nRules:\n- Summarize clinically\n- Store in \"queixa_principal\"\n- Define best treatment automatically\n- Store in \"tipo_tratamento\"\n\nNever ask which treatment they want.\n\n--------------------------------------------------\nSTEP 5 — DESIRED DATE VALIDATION\n\nRequest desired date.\n\nSTRICT VALIDATION:\n\n1) Convert to YYYY-MM-DD.\n2) Extract current date from {{api:data_atual_timestamp}}.\n3) Split both dates into year, month and day.\n4) Compare year, month and day separately.\n\nReject immediately if:\n- Year is less than current year\n- Same year and month less than current month\n- Same year and month and day less than current day\n\nIf invalid:\nRequest new date.\nDo not proceed.\n\nOnly accept if date is today or future.\nStore in \"data_iso\".\n\n--------------------------------------------------\nSTEP 6 — PERIOD SELECTION\n\nAsk for:\n- manha\n- tarde\n\nStore in \"periodo\".\n\nIf ambiguous:\nClarify.\n\n--------------------------------------------------\nEXIT HANDLING\n\nIf patient indicates desire to end:\nInstruct them to type \"sair\".\nOnly if they type \"sair\":\nReturn only:\nSAIR\n\n--------------------------------------------------\nFINALIZATION RULE\n\nWhen all steps are validated:\n\nDo not send any message to the patient.\n\nReturn only the technical JSON:\n\n{\n  \"nome_completo\": \"\",\n  \"data_nascimento\": \"\",\n  \"data_iso\": \"\",\n  \"periodo\": \"\",\n  \"tipo_tratamento\": \"\",\n  \"queixa_principal\": \"\"\n}\n\nImmediately terminate execution.",
+        "prompt": "CURRENT CONTEXT\n\nYou are in the scheduling triage stage.\n\nThe flow must follow a strict logical order, but your communication must be natural, friendly and human.\n\nAlways follow the personality defined in the system instructions:\n- warm\n- professional\n- polite\n- natural conversation\n- never robotic\n\nAddress the patient by their FIRST NAME whenever possible.\n\nYour role is to collect information required to schedule ONE consultation.\n\n--------------------------------------------------\n\nMULTIPLE PATIENT RULE\n\nThis triage flow allows scheduling for ONLY ONE patient at a time.\n\nIf the user indicates:\n\n- scheduling for multiple people\n- scheduling for relatives\n- scheduling for family members\n- scheduling more than one consultation\n\nYou must stop the triage and respond:\n\n\"Para agendamentos envolvendo mais de uma pessoa ou para terceiros, o atendimento é realizado diretamente pela recepção da Clínica Aria.\n\nRecepção Aria: 61 99643-1899\"\n\nTerminate execution immediately.\n\n--------------------------------------------------\n\nKNOWLEDGE BASE POLICY\n\nIf the patient asks institutional questions during triage such as:\n\n- endereço\n- localização\n- horário de funcionamento\n- valores\n- convênios\n- tratamentos\n- procedimentos\n- profissionais\n\nYou MUST consult the knowledge base (File Search).\n\nRules:\n\n- Never invent information\n- Never assume information\n- Only use knowledge base data\n\nAfter answering, continue the triage step.\n\n--------------------------------------------------\n\nMANDATORY STEP ORDER\n\n1) Full name\n2) Date of birth\n3) Strategic clinic question\n4) Chief complaint\n5) Desired date\n6) Period selection\n\nYou must complete steps sequentially.\n\n--------------------------------------------------\n\nSTEP 1 — FULL NAME\n\nAsk the patient for their full name.\n\nValidation:\n\n- Must contain at least two words\n- Each word must have at least 2 characters\n\nIf invalid:\nask again.\n\nAfter valid:\n\nStore:\n\n\"nome_completo\"\n\nExtract first name and store:\n\n\"primeiro_nome\"\n\nExample:\nPaulo Silva → Paulo\n\nUse the first name during conversation.\n\n--------------------------------------------------\n\nSTEP 2 — DATE OF BIRTH\n\nAsk naturally for the patient's birth date.\n\nAccept flexible formats.\n\nConvert to YYYY-MM-DD.\n\nStore:\n\n\"data_nascimento\"\n\nCalculate age using:\n\n{{api:data_atual_timestamp}}\n\nIf age < 16:\n\nStore:\n\n\"idade_paciente\"\n\nInform politely that scheduling must be done through reception.\n\nTerminate execution.\n\nIf ≥ 16:\ncontinue.\n\n--------------------------------------------------\n\nSTEP 3 — STRATEGIC QUESTION\n\nAsk if the patient already knows the clinic or would like a brief explanation.\n\nIf explanation requested:\n\nProvide short explanation using knowledge base.\n\nThen continue.\n\n--------------------------------------------------\n\nSTEP 4 — CHIEF COMPLAINT\n\nAsk about the main dental concern.\n\nRules:\n\n- Interpret clinically\n- Summarize objectively\n- Do not copy exact wording\n\nStore:\n\n\"queixa_principal\"\n\nDetermine the best treatment.\n\nStore:\n\n\"tipo_tratamento\"\n\nDo NOT ask which treatment they want.\n\n--------------------------------------------------\n\nSPECIAL INTERRUPTION — HOF\n\nIf complaint indicates:\n\n- harmonização\n- botox\n- preenchimento\n- toxina botulínica\n- rinomodelação\n- estética facial\n\nStore:\n\n\"intencao_triagem\" = \"hof\"\n\nTerminate execution immediately.\n\n--------------------------------------------------\n\nSPECIAL INTERRUPTION — URGENCY\n\nIf patient indicates urgency such as:\n\n- dor intensa\n- emergência\n- sangramento\n- trauma\n- inchaço grave\n\nStore:\n\n\"intencao_triagem\" = \"urgencia\"\n\nTerminate execution.\n\n--------------------------------------------------\n\n--------------------------------------------------\n\nSTEP 5 — DESIRED DATE\n\nAsk the patient which day they would like to schedule.\n\nAccept natural expressions such as:\n\n- hoje\n- amanhã\n- depois de amanhã\n- specific calendar dates\n\nConvert the interpreted date to ISO format:\n\nYYYY-MM-DD\n\nBefore accepting the date, you MUST evaluate the current system time.\n\nThe system provides the current timestamp:\n\n{{api:data_atual_timestamp}}\n\nFrom this value you must determine:\n\n• current date\n• current time\n\nYou must also consider the clinic working hours available in the knowledge base.\n\n--------------------------------------------------\n\nTODAY VALIDATION\n\nIf the patient requests scheduling for **today**:\n\n1) Compare the selected date with the current date.\n2) Check the current time using {{api:data_atual_timestamp}}.\n3) Verify if the clinic is still within its working hours.\n\n--------------------------------------------------\n\nIF THE CLINIC IS ALREADY CLOSED TODAY\n\nDo NOT accept scheduling for today.\n\nRespond politely:\n\n\"{{primeiro_nome}}, como o horário de atendimento da clínica já foi encerrado hoje, não conseguimos confirmar novos atendimentos para hoje.\n\nPodemos agendar para amanhã ou para outra data que seja melhor para você.\"\n\nDo NOT store today's date.\n\nAsk the patient to choose another date.\n\n--------------------------------------------------\n\nIF THE CLINIC IS STILL OPEN TODAY\n\nAccept today's date normally.\n\n--------------------------------------------------\n\nDATE VALIDATION\n\nThe selected date must be:\n\ntoday or a future date.\n\nIf the date is in the past:\n\nask the patient to provide another date.\n\n--------------------------------------------------\n\nAfter validation, store:\n\n\"data_iso\"\n--------------------------------------------------\n\nSTEP 6 — PERIOD\n\nAsk preferred period:\n\n- manhã\n- tarde\n\nStore:\n\n\"periodo\"\n\n--------------------------------------------------\n\nAFTER PERIOD IS COLLECTED\n\nInform the patient that you will check availability.\n\nExample tone:\n\n\"Perfeito, {{primeiro_nome}}. Vou verificar os horários disponíveis para você.\"\n\nThe system will then call the verification API.\n\n--------------------------------------------------\n\nWHEN AVAILABLE TIMES ARE RECEIVED\n\nThe API returns:\n\nhorarios_disponiveis\n\nStructure:\n\n[\n { \"horario\": \"14:00\", ... },\n { \"horario\": \"14:30\", ... }\n]\n\nYou MUST extract ALL values from the field:\n\nhorario\n\nAnd present them in list format.\n\nExample:\n\n\"{{primeiro_nome}}, encontrei os seguintes horários disponíveis para o dia escolhido:\n\n• 14:00  \n• 14:30  \n• 15:00  \n• 15:30\n\nQual desses horários funciona melhor para você?\"\n\nNever show only the first item.\n\n--------------------------------------------------\n\nEXIT HANDLING\n\nIf the patient wants to leave:\n\nAsk them to type:\n\n\"sair\"\n\nOnly if they type \"sair\":\n\nReturn:\n\nSAIR\n\n--------------------------------------------------\n\nFINALIZATION\n\nWhen steps 1-6 are complete:\n\nReturn ONLY the JSON:\n\n{\n \"nome_completo\": \"\",\n \"data_nascimento\": \"\",\n \"data_iso\": \"\",\n \"periodo\": \"\",\n \"tipo_tratamento\": \"\",\n \"queixa_principal\": \"\"\n}\n\nTerminate execution.",
         "AIId": "",
         "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
         "interactionsLimit": null,
@@ -178,6 +183,11 @@
             "id": 8,
             "name": "idade_paciente",
             "description": "Idade do paciente que você está atendendo (somente o valor numérico)"
+          },
+          {
+            "id": 9,
+            "name": "intencao_triagem",
+            "description": "Intenção do Paciente na qual você está atendendo"
           }
         ],
         "intervalSettings": {
@@ -186,15 +196,15 @@
         }
       },
       "position": {
-        "x": 264.9836107050805,
+        "x": 246.1629344748787,
+        "y": -1075.531246116412
+      },
+      "positionAbsolute": {
+        "x": 246.1629344748787,
         "y": -1075.531246116412
       },
       "width": 278,
-      "height": 698,
-      "positionAbsolute": {
-        "x": 264.9836107050805,
-        "y": -1075.531246116412
-      }
+      "height": 698
     },
     {
       "id": "24",
@@ -207,12 +217,12 @@
         "x": 5232.517682254955,
         "y": -1177.417239893406
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 5232.517682254955,
         "y": -1177.417239893406
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "26",
@@ -220,7 +230,7 @@
       "data": {
         "apiKey": "",
         "type": "mission",
-        "prompt": "CURRENT CONTEXT\n\nFull Name: {{gpt:nome_completo}}\nFirst Name: {{gpt:primeiro_nome}}\nSelected Date (ISO): {{gpt:data_iso}}\nSelected Period: {{gpt:periodo}}\nAvailable Times: {{api:horarios_disponiveis}}\n\nYour task in this stage:\n\n- Present available time slots.\n- Interpret the patient’s selection deterministically.\n- Confirm a valid time.\n- Handle date/period change requests.\n- Terminate immediately after confirming a valid time.\n\n--------------------------------------------------\nAVAILABLE TIMES RULE\n\nYou may ONLY accept times that exist EXACTLY in the received list.\n\nIf a time does not exactly match an item in the list after full normalization,\nit must be rejected.\n\n--------------------------------------------------\nTIME NORMALIZATION PROCESS (MANDATORY)\n\nBefore validating any time written by the patient:\n\nSTEP 1 — Convert written time into numeric hour and minute.\n\nExamples:\n- \"cinco e meia\" → 5:30\n- \"cinco horas\" → 5:00\n- \"dez e meia\" → 10:30\n- \"onze horas\" → 11:00\n\nSTEP 2 — Apply period context rule:\n\nIf periodo == \"tarde\":\n- If hour is between 1 and 11 → add 12.\n\nExamples:\n- 5:30 (tarde) → 17:30\n- 3:00 (tarde) → 15:00\n- 11:00 (tarde) → 23:00 (only valid if exists in list)\n\nIf periodo == \"manha\":\n- Do not modify hour.\n\nSTEP 3 — Format strictly as HH:MM (two digits).\n\nSTEP 4 — Validate exact match against Available Times list.\n\nIf not exact → reject.\n\nNever approximate.\nNever map to closest time.\n\n--------------------------------------------------\nSELECTION RULES\n\nCASE 1 — Patient chooses a number:\nValidate by list index.\n\nCASE 2 — Patient writes a time:\nApply full normalization process.\n\nCASE 3 — Ambiguous response:\nAsk the patient to choose by number.\n\n--------------------------------------------------\nEMPTY LIST RULE\n\nIf Available Times is empty:\n\nRespond only:\n\n\"[Primeiro Nome], infelizmente não há horários disponíveis para essa data no período selecionado.\n\nVocê pode me informar uma nova data para verificarmos?\"\n\nDo not add anything else.\n\n--------------------------------------------------\nDATE OR PERIOD CHANGE\n\nIf the patient wants to change date or period:\n\nRespond:\n\n\"[Primeiro Nome], para alterar a data ou o período, preciso redirecionar você para a etapa de triagem para verificarmos novamente as disponibilidades.\n\nPosso redirecionar?\"\n\nIf patient confirms clearly:\n\nStore internally on variable {{gpt:redirecionamento}}:\n\nredirecionamento = \"triagem\"\n\nRespond only:\n\"Perfeito. Vou redirecionar você agora.\"\n\nTerminate immediately.\n\n--------------------------------------------------\nCONFIRMATION FORMAT (MANDATORY)\n\nWhen a valid time is selected:\n\nRespond exactly:\n\n\"Perfeito, [Primeiro Nome].\nVocê escolheu o horário das HH:MM.\n\nEstou dando continuidade ao seu agendamento agora.\"\n\nAfter sending this message:\nTerminate execution immediately.\nDo not continue conversation.\nDo not ask questions.",
+        "prompt": "CURRENT CONTEXT\n\nFull Name: {{gpt:nome_completo}}  \nFirst Name: {{gpt:primeiro_nome}}  \nPhone: 5561999887766  \nSelected Date (ISO): {{gpt:data_iso}}  \nSelected Period: {{gpt:periodo}}  \nAvailable Times (structured array): {{api:horarios_disponiveis}}  \nTreatment Type: {{gpt:tipo_tratamento}}  \nChief Complaint: {{gpt:queixa_principal}}  \nPreferred Professional (if exists): {{gpt:profissional_preferido}}\n\nYou are now in the appointment scheduling stage.\n\nFollow the personality defined in the system instructions:\n\n- be friendly  \n- be polite  \n- be natural  \n- sound like a real clinic assistant  \n- never sound robotic  \n\nAlways address the patient using:\n\n{{gpt:primeiro_nome}}\n\nYour responsibility in this stage:\n\n1) Present available time slots  \n2) Interpret the patient's selection deterministically  \n3) Identify the corresponding object inside Available Times  \n4) Apply professional selection rules ONLY when required  \n5) Present full consultation summary  \n6) Ask for confirmation  \n7) Allow corrections according to business rules  \n8) Update variables if needed  \n9) Only after explicit confirmation, terminate execution  \n\nDo NOT execute scheduling.  \nDo NOT mention system logic.\n\n--------------------------------------------------\n\nSYSTEM TIME AWARENESS\n\nThe system provides the current timestamp:\n\n{{api:data_atual_timestamp}}\n\nYou must interpret this value to determine:\n\n• current date  \n• current time\n\nYou must also consult the clinic working hours available in the Knowledge Base.\n\n--------------------------------------------------\n\nTODAY SCHEDULING VALIDATION\n\nIf the selected date:\n\n{{gpt:data_iso}}\n\ncorresponds to **today's date**, you must verify if scheduling today is still possible.\n\nSteps:\n\n1) Extract the current hour from {{api:data_atual_timestamp}}.\n2) Check the clinic working hours from the Knowledge Base.\n3) Determine if there is still time available for appointments today.\n\n--------------------------------------------------\n\nIF THE CLINIC IS ALREADY CLOSED TODAY\n\nIf the clinic working hours have already ended:\n\nDo NOT present time slots.\n\nRespond politely:\n\n\"{{gpt:primeiro_nome}}, como o horário de atendimento da clínica já foi encerrado hoje, não conseguimos confirmar novos atendimentos para hoje.\n\nPosso redirecionar você para escolhermos outro dia.\"\n\nStore:\n\n{{gpt:redirecionamento_agendamento}} = \"triagem\"\n\nTerminate execution immediately.\n\n--------------------------------------------------\n\nIF SOME TIME SLOTS ARE ALREADY IN THE PAST\n\nIf the selected date is today:\n\nIgnore any horário that is earlier than the current time.\n\nExample:\n\nCurrent time = 15:10\n\nValid times:\n15:30\n16:00\n16:30\n\nInvalid times:\n14:00\n14:30\n15:00\n\nNever present horários that already passed.\n\n--------------------------------------------------\n\nAVAILABLE TIMES STRUCTURE\n\nAvailable Times is an ARRAY of objects.\n\nExample structure:\n\n[\n{\n\"horario\": \"14:00\",\n\"profissionais_disponiveis\": [\"gabriella\",\"renata\"]\n},\n{\n\"horario\": \"14:30\",\n\"profissionais_disponiveis\": [\"gabriella\",\"renata\"]\n}\n]\n\nYou must read ALL objects inside the array.\n\nFor each object:\n\nExtract the value of the field:\n\n\"horario\"\n\nThe valid horários correspond to ALL values found in this field.\n\nNever assume only the first item.  \nNever ignore items in the array.\n\n--------------------------------------------------\n\nPRESENTING AVAILABLE TIMES\n\nExtract every \"horario\" value from:\n\n{{api:horarios_disponiveis}}\n\nDisplay them in bullet list format.\n\nExample message tone:\n\n\"{{gpt:primeiro_nome}}, encontrei os seguintes horários disponíveis para o período escolhido:\n\n• 14:00  \n• 14:30  \n• 15:00  \n• 15:30  \n\nQual desses horários funciona melhor para você?\"\n\nNever display only one item if multiple exist.\n\n--------------------------------------------------\n\nTIME NORMALIZATION (MANDATORY)\n\nWhen the patient selects a time:\n\n1) Convert written time into numeric format.\n2) Accept formats such as:\n   - 2\n   - 2h\n   - 2 da tarde\n   - 14\n   - 14h\n   - 14:00\n3) Convert to HH:MM format.\n4) If periodo == \"tarde\" and hour between 1–11 → add 12.\n\nExample:\n\n2 → 14:00  \n2h → 14:00  \n14 → 14:00  \n\nAfter normalization:\n\nValidate exact match with the \"horario\" field.\n\nIf not exact → reject.\n\nNever approximate.\n\n--------------------------------------------------\n\nPROFESSIONAL RULES (ONLY WHEN NECESSARY)\n\nAfter identifying the selected horário:\n\nExtract:\n\nprofissionais_disponiveis\n\n--------------------------------------------------\n\nRULE 1 — Implant facial\n\nIf:\n\ntipo_tratamento == \"implante_facial\"\n\nThen:\n\nOnly \"renata\" is allowed.\n\nIf \"renata\" is NOT available for the selected horário:\n\nInform politely that this horário is not available for that procedure and ask the patient to choose another horário.\n\nIf \"renata\" IS available:\n\nStore:\n\n{{gpt:profissional_escolhido}} = \"renata\"\n\n--------------------------------------------------\n\nRULE 2 — Preferred professional\n\nIf:\n\n{{gpt:profissional_preferido}} exists\n\nThen:\n\nIf available inside profissionais_disponiveis:\n\nStore in:\n\n{{gpt:profissional_escolhido}}\n\nIf NOT available:\n\nInform politely and ask for another horário.\n\n--------------------------------------------------\n\nRULE 3 — General case\n\nIf none of the above conditions apply:\n\nDo NOT select professional.\n\nDo NOT store:\n\n{{gpt:profissional_escolhido}}\n\nThe backend system will decide automatically.\n\n--------------------------------------------------\n\nAFTER VALID TIME SELECTION\n\nConvert:\n\n{{gpt:data_iso}}\n\nto Brazilian format:\n\nDD/MM/AAAA\n\nSend a summary in a natural tone:\n\n\"{{gpt:primeiro_nome}}, vou confirmar os dados da sua consulta:\n\n• Nome: {{gpt:nome_completo}}  \n• Telefone: 5561999887766  \n• Data: DD/MM/AAAA  \n• Horário: HH:MM\"\n\nIf:\n\n{{gpt:profissional_escolhido}} exists\n\nInclude:\n\n\"• Profissional: {{gpt:profissional_escolhido}}\"\n\nThen ask:\n\n\"Está tudo correto para você?\"\n\nWait for the response.\n\n--------------------------------------------------\n\nCHANGE RULES\n\n1) If patient wants NEW DATE:\n\nStore:\n\n{{gpt:redirecionamento_agendamento}} = \"triagem\"\n\nRespond:\n\n\"Perfeito, {{gpt:primeiro_nome}}. Vou redirecionar você para ajustarmos a data.\"\n\nTerminate immediately.\n\n--------------------------------------------------\n\n2) If patient wants NEW PERIOD:\n\nStore:\n\n{{gpt:redirecionamento_agendamento}} = \"triagem\"\n\nRespond:\n\n\"Sem problema, {{gpt:primeiro_nome}}. Vou redirecionar para ajustarmos o período.\"\n\nTerminate immediately.\n\n--------------------------------------------------\n\n3) If patient wants NEW TIME within the SAME period:\n\nDo NOT redirect.\n\nReturn to time selection stage.\n\nRe-present available horários.\n\nAllow new selection.\n\nApply validation again.\n\nRe-present updated summary.\n\nAsk confirmation again.\n\n--------------------------------------------------\n\n4) If patient wants to change PROFESSIONAL:\n\nOnly allow change if multiple profissionais_disponiveis existed.\n\nIf valid:\n\nUpdate:\n\n{{gpt:profissional_escolhido}}\n\nRe-present summary.\n\nAsk confirmation again.\n\n--------------------------------------------------\n\n5) If patient wants to speak to a HUMAN ATTENDANT:\n\nStore:\n\n{{gpt:redirecionamento_agendamento}} = \"atendente\"\n\nRespond:\n\n\"Entendido, {{gpt:primeiro_nome}}. Vou encaminhar você agora para um atendente da clínica.\"\n\nTerminate immediately.\n\n--------------------------------------------------\n\nFINAL CONFIRMATION\n\nIf the patient clearly confirms (sim, ok, correto, confirmado, tudo certo):\n\nStore:\n\n{{gpt:confirmacao_final}} = \"confirmado\"\n\nRespond exactly:\n\n\"Perfeito, {{gpt:primeiro_nome}}. Vou finalizar o seu agendamento agora.\"\n\nTerminate execution immediately.\n\n--------------------------------------------------\n\nSTRICT RULES\n\n- Do not assume confirmation  \n- Do not skip confirmation  \n- Do not redirect unnecessarily  \n- Do not execute scheduling  \n- Do not mention JSON  \n- Do not mention API  \n- Always use the patient's first name  \n- Maintain natural and professional tone  \n- Terminate only after confirmation or redirection",
         "AIId": "",
         "assistantId": "asst_AqxRlWWcFPUds3wEudBRTokR",
         "interactionsLimit": null,
@@ -232,6 +242,11 @@
             "id": 1,
             "name": "horario_escolhido",
             "description": "Horário que o cliente na qual você está atendendo escolheu para marcar a consulta"
+          },
+          {
+            "id": 2,
+            "name": "redirecionamento_agendamento",
+            "description": ""
           }
         ],
         "intervalSettings": {
@@ -243,54 +258,12 @@
         "x": 2185.17074777127,
         "y": -2621.613604509602
       },
-      "width": 278,
-      "height": 637,
       "positionAbsolute": {
         "x": 2185.17074777127,
         "y": -2621.613604509602
-      }
-    },
-    {
-      "id": "27",
-      "type": "questionNode",
-      "data": {
-        "type": "options",
-        "message": "Por favor, confirme os dados da sua consulta:\n\nNome: {{gpt:nome_completo}}\n☎️ Telefone: {{conversation:powerzap_phone}}\n📅 Data: {{gpt:data_formatada}}\n🕒 Horário: {{gpt:horario_escolhido}}  \n🦷 Período: {{gpt:periodo}} \n\nEstá tudo correto?",
-        "leadField": null,
-        "contactField": null,
-        "dealField": null,
-        "companyField": null,
-        "variableField": null,
-        "customMessage": "Desculpe, responda somente com uma das opções listadas acima.",
-        "formatType": "whatsapp-buttons",
-        "useWhatsAppButtons": true,
-        "intervalSettings": {
-          "enabled": true,
-          "interval": 3
-        },
-        "options": [
-          {
-            "id": "27.1",
-            "content": "SIM",
-            "keywords": []
-          },
-          {
-            "id": "27.2",
-            "content": "NÃO",
-            "keywords": []
-          }
-        ]
-      },
-      "position": {
-        "x": 3143.068128224413,
-        "y": -2548.322952130838
       },
       "width": 278,
-      "height": 632,
-      "positionAbsolute": {
-        "x": 3143.068128224413,
-        "y": -2548.322952130838
-      }
+      "height": 637
     },
     {
       "id": "29",
@@ -318,15 +291,15 @@
         ]
       },
       "position": {
-        "x": 1770.34674060011,
-        "y": -1238.647193305529
+        "x": 1776.645622329574,
+        "y": -1252.819677196821
+      },
+      "positionAbsolute": {
+        "x": 1776.645622329574,
+        "y": -1252.819677196821
       },
       "width": 278,
-      "height": 379,
-      "positionAbsolute": {
-        "x": 1770.34674060011,
-        "y": -1238.647193305529
-      }
+      "height": 379
     },
     {
       "id": "30",
@@ -339,30 +312,12 @@
         "x": -973.4712985233145,
         "y": -2329.670260438688
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": -973.4712985233145,
         "y": -2329.670260438688
-      }
-    },
-    {
-      "id": "32",
-      "type": "messageNode",
-      "data": {
-        "messageData": "Certo, me diga qual informação você quer alterar?",
-        "sendAsWhisper": false
-      },
-      "position": {
-        "x": 1307.623354764527,
-        "y": -102.315417609234
       },
       "width": 278,
-      "height": 250,
-      "positionAbsolute": {
-        "x": 1307.623354764527,
-        "y": -102.315417609234
-      }
+      "height": 250
     },
     {
       "id": "33",
@@ -378,7 +333,7 @@
           }
         ],
         "params": [],
-        "body": "{\n  \"evento\": \"agendamento\",\n  \"nome_completo\": \"{{gpt:nome_completo}}\",\n  \"telefone\": \"5561999887766\",\n  \"data_iso\": \"{{gpt:data_iso}}\",\n  \"horario_consulta\": \"{{gpt:horario_escolhido}}\",\n  \"tipo_tratamento\": \"{{gpt:tipo_tratamento}}\",\n  \"queixa_principal\": \"{{gpt:queixa_principal}}\"\n}",
+        "body": "{\n  \"evento\": \"agendamento\",\n\n  \"paciente\": {\n    \"nome_completo\": \"{{gpt:nome_completo}}\",\n    \"telefone\": \"5561999887766\"\n  },\n\n  \"consulta\": {\n    \"data_iso\": \"{{gpt:data_iso}}\",\n    \"periodo\": \"{{gpt:periodo}}\",\n    \"horario\": \"{{gpt:horario_escolhido}}\",\n    \"tipo_tratamento\": \"{{gpt:tipo_tratamento}}\",\n    \"queixa_principal\": \"{{gpt:queixa_principal}}\"\n  },\n\n  \"contexto_verificacao\": {\n    \"agenda_utilizada\": \"{{api:agenda_utilizada}}\",\n    \"profissional_escolhido\": \"{{gpt:profissional_escolhido}}\"\n  }\n}",
         "apiVariables": [
           {
             "id": 8,
@@ -403,15 +358,15 @@
         ]
       },
       "position": {
-        "x": 3509.053103316297,
-        "y": -2584.807170834343
+        "x": 3262.117220247308,
+        "y": -2511.886507377729
+      },
+      "positionAbsolute": {
+        "x": 3262.117220247308,
+        "y": -2511.886507377729
       },
       "width": 278,
-      "height": 245,
-      "positionAbsolute": {
-        "x": 3509.053103316297,
-        "y": -2584.807170834343
-      }
+      "height": 245
     },
     {
       "id": "34",
@@ -442,12 +397,12 @@
         "x": 3855.424755987364,
         "y": -2593.356646000885
       },
-      "width": 278,
-      "height": 379,
       "positionAbsolute": {
         "x": 3855.424755987364,
         "y": -2593.356646000885
-      }
+      },
+      "width": 278,
+      "height": 379
     },
     {
       "id": "36",
@@ -475,12 +430,12 @@
         "x": 3853.841553023998,
         "y": -1955.227201384444
       },
-      "width": 278,
-      "height": 698,
       "positionAbsolute": {
         "x": 3853.841553023998,
         "y": -1955.227201384444
-      }
+      },
+      "width": 278,
+      "height": 698
     },
     {
       "id": "37",
@@ -490,12 +445,12 @@
         "x": 5710.544351730309,
         "y": -2435.090711620555
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": 5710.544351730309,
         "y": -2435.090711620555
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "38",
@@ -505,12 +460,12 @@
         "x": 641.8991857101219,
         "y": -562.611139666649
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": 641.8991857101219,
         "y": -562.611139666649
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "39",
@@ -527,12 +482,12 @@
         "x": -1264.655970417664,
         "y": -968.8074447108154
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": -1264.655970417664,
         "y": -968.8074447108154
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "40",
@@ -564,12 +519,12 @@
         "x": 971.9309639808498,
         "y": 658.1656190099931
       },
-      "width": 278,
-      "height": 641,
       "positionAbsolute": {
         "x": 971.9309639808498,
         "y": 658.1656190099931
-      }
+      },
+      "width": 278,
+      "height": 641
     },
     {
       "id": "42",
@@ -618,12 +573,12 @@
         "x": 133.9616516864352,
         "y": 686.2729189972063
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 133.9616516864352,
         "y": 686.2729189972063
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "44",
@@ -640,12 +595,12 @@
         "x": -195.8106082702195,
         "y": 680.1082870865456
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": -195.8106082702195,
         "y": 680.1082870865456
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "45",
@@ -669,12 +624,12 @@
         "x": 531.7576028169037,
         "y": 669.6610012854972
       },
-      "width": 278,
-      "height": 307,
       "positionAbsolute": {
         "x": 531.7576028169037,
         "y": 669.6610012854972
-      }
+      },
+      "width": 278,
+      "height": 307
     },
     {
       "id": "46",
@@ -687,12 +642,12 @@
         "x": 863.1229224759072,
         "y": 218.6287104860062
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 863.1229224759072,
         "y": 218.6287104860062
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "47",
@@ -715,12 +670,12 @@
         "x": 1330.787118765071,
         "y": 856.7937101490436
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 1330.787118765071,
         "y": 856.7937101490436
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "48",
@@ -737,12 +692,12 @@
         "x": 1808.542251154065,
         "y": 562.3501253800218
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 1808.542251154065,
         "y": 562.3501253800218
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "49",
@@ -752,12 +707,12 @@
         "x": 2146.085165898834,
         "y": 630.4500306730716
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": 2146.085165898834,
         "y": 630.4500306730716
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "50",
@@ -774,12 +729,12 @@
         "x": -377.6836180818403,
         "y": 1925.211011660746
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": -377.6836180818403,
         "y": 1925.211011660746
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "51",
@@ -833,12 +788,12 @@
         "x": 393.2372924632024,
         "y": 1931.369077220899
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 393.2372924632024,
         "y": 1931.369077220899
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "53",
@@ -851,12 +806,12 @@
         "x": 1456.17501726073,
         "y": 1526.950556461183
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 1456.17501726073,
         "y": 1526.950556461183
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "54",
@@ -893,12 +848,12 @@
         "x": 1837.104604422439,
         "y": 2205.111040301274
       },
-      "width": 278,
-      "height": 641,
       "positionAbsolute": {
         "x": 1837.104604422439,
         "y": 2205.111040301274
-      }
+      },
+      "width": 278,
+      "height": 641
     },
     {
       "id": "55",
@@ -922,12 +877,12 @@
         "x": 773.7866353620832,
         "y": 1904.300538988946
       },
-      "width": 278,
-      "height": 307,
       "positionAbsolute": {
         "x": 773.7866353620832,
         "y": 1904.300538988946
-      }
+      },
+      "width": 278,
+      "height": 307
     },
     {
       "id": "60",
@@ -943,7 +898,7 @@
           }
         ],
         "params": [],
-        "body": "{\n  \"evento\": \"get_data_base\" \n}",
+        "body": "{\n  \"evento\": \"get_data_base\"\n}",
         "apiVariables": [
           {
             "id": 1,
@@ -956,12 +911,12 @@
         "x": -969.7583340658309,
         "y": -970.0643909499371
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": -969.7583340658309,
         "y": -970.0643909499371
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "61",
@@ -990,12 +945,12 @@
         "x": 2.694679278943113,
         "y": 1927.483779537346
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 2.694679278943113,
         "y": 1927.483779537346
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "62",
@@ -1012,12 +967,12 @@
         "x": 2228.474714543282,
         "y": 2400.205013303012
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 2228.474714543282,
         "y": 2400.205013303012
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "63",
@@ -1051,12 +1006,12 @@
         "x": 2575.291158210474,
         "y": 2400.723908640897
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 2575.291158210474,
         "y": 2400.723908640897
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "66",
@@ -1087,12 +1042,12 @@
         "x": 3158.320832968403,
         "y": 2261.011161597982
       },
-      "width": 278,
-      "height": 637,
       "positionAbsolute": {
         "x": 3158.320832968403,
         "y": 2261.011161597982
-      }
+      },
+      "width": 278,
+      "height": 637
     },
     {
       "id": "67",
@@ -1121,12 +1076,12 @@
         "x": 3616.142122072933,
         "y": 2454.303355996369
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": 3616.142122072933,
         "y": 2454.303355996369
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "68",
@@ -1151,12 +1106,12 @@
         "x": 4777.12745617615,
         "y": 2297.701261304343
       },
-      "width": 278,
-      "height": 534,
       "positionAbsolute": {
         "x": 4777.12745617615,
         "y": 2297.701261304343
-      }
+      },
+      "width": 278,
+      "height": 534
     },
     {
       "id": "69",
@@ -1166,12 +1121,12 @@
         "x": 5271.956802250264,
         "y": 2510.733544909485
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": 5271.956802250264,
         "y": 2510.733544909485
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "70",
@@ -1195,12 +1150,12 @@
         "x": 4115.321627202219,
         "y": 2422.399799222227
       },
-      "width": 278,
-      "height": 307,
       "positionAbsolute": {
         "x": 4115.321627202219,
         "y": 2422.399799222227
-      }
+      },
+      "width": 278,
+      "height": 307
     },
     {
       "id": "71",
@@ -1213,12 +1168,12 @@
         "x": 4566.048152812627,
         "y": 776.2045209459104
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 4566.048152812627,
         "y": 776.2045209459104
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "72",
@@ -1246,12 +1201,12 @@
         "x": -2267.69198966998,
         "y": -447.662372065967
       },
-      "width": 278,
-      "height": 763,
       "positionAbsolute": {
         "x": -2267.69198966998,
         "y": -447.662372065967
-      }
+      },
+      "width": 278,
+      "height": 763
     },
     {
       "id": "73",
@@ -1296,12 +1251,12 @@
         "x": -1411.652287406569,
         "y": -474.9064670832517
       },
-      "width": 278,
-      "height": 523,
       "positionAbsolute": {
         "x": -1411.652287406569,
         "y": -474.9064670832517
-      }
+      },
+      "width": 278,
+      "height": 523
     },
     {
       "id": "74",
@@ -1322,30 +1277,30 @@
         "x": 6652.534432481103,
         "y": -1254.196456884549
       },
-      "width": 278,
-      "height": 534,
       "positionAbsolute": {
         "x": 6652.534432481103,
         "y": -1254.196456884549
-      }
+      },
+      "width": 278,
+      "height": 534
     },
     {
       "id": "75",
       "type": "transferNode",
       "data": {
         "transferType": "user",
-        "selectedUser": "134031"
+        "selectedUser": "134429"
       },
       "position": {
         "x": 7076.710432852265,
         "y": -1108.407555200814
       },
-      "width": 278,
-      "height": 239,
       "positionAbsolute": {
         "x": 7076.710432852265,
         "y": -1108.407555200814
-      }
+      },
+      "width": 278,
+      "height": 239
     },
     {
       "id": "76",
@@ -1378,12 +1333,12 @@
         "x": -134.1950725079045,
         "y": -2491.614887127645
       },
-      "width": 278,
-      "height": 578,
       "positionAbsolute": {
         "x": -134.1950725079045,
         "y": -2491.614887127645
-      }
+      },
+      "width": 278,
+      "height": 578
     },
     {
       "id": "77",
@@ -1396,12 +1351,12 @@
         "x": -1158.664411916327,
         "y": -1514.159473354702
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": -1158.664411916327,
         "y": -1514.159473354702
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "78",
@@ -1411,12 +1366,12 @@
         "x": -764.5267055186873,
         "y": -1451.588283511328
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": -764.5267055186873,
         "y": -1451.588283511328
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "79",
@@ -1432,35 +1387,34 @@
           },
           {
             "id": "79.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_triagem}}",
+            "secondValue": "hof"
+          },
+          {
+            "id": "79.3",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_triagem}}",
+            "secondValue": "urgencia"
+          },
+          {
+            "id": "79.4",
             "type": "none"
           }
         ]
       },
       "position": {
-        "x": 674.0179234876312,
-        "y": -1502.56157922932
+        "x": 607.4267801795415,
+        "y": -1530.289973260818
+      },
+      "positionAbsolute": {
+        "x": 607.4267801795415,
+        "y": -1530.289973260818
       },
       "width": 278,
-      "height": 307,
-      "positionAbsolute": {
-        "x": 674.0179234876312,
-        "y": -1502.56157922932
-      }
-    },
-    {
-      "id": "80",
-      "type": "endChatNode",
-      "data": {},
-      "position": {
-        "x": 1022.050439101406,
-        "y": -1650.45315362023
-      },
-      "width": 278,
-      "height": 114,
-      "positionAbsolute": {
-        "x": 1022.050439101406,
-        "y": -1650.45315362023
-      }
+      "height": 451
     },
     {
       "id": "81",
@@ -1481,12 +1435,12 @@
         "x": 4390.278565254628,
         "y": -2716.990159605284
       },
-      "width": 278,
-      "height": 534,
       "positionAbsolute": {
         "x": 4390.278565254628,
         "y": -2716.990159605284
-      }
+      },
+      "width": 278,
+      "height": 534
     },
     {
       "id": "82",
@@ -1507,12 +1461,12 @@
         "x": 4750.084259843659,
         "y": -2798.201254591258
       },
-      "width": 278,
-      "height": 698,
       "positionAbsolute": {
         "x": 4750.084259843659,
         "y": -2798.201254591258
-      }
+      },
+      "width": 278,
+      "height": 698
     },
     {
       "id": "83",
@@ -1525,12 +1479,12 @@
         "x": 5348.475556302806,
         "y": -2502.724060506016
       },
-      "width": 278,
-      "height": 250,
       "positionAbsolute": {
         "x": 5348.475556302806,
         "y": -2502.724060506016
-      }
+      },
+      "width": 278,
+      "height": 250
     },
     {
       "id": "84",
@@ -1563,12 +1517,12 @@
         "x": -2317.028015650596,
         "y": 700.3451211847372
       },
-      "width": 278,
-      "height": 632,
       "positionAbsolute": {
         "x": -2317.028015650596,
         "y": 700.3451211847372
-      }
+      },
+      "width": 278,
+      "height": 632
     },
     {
       "id": "86",
@@ -1578,12 +1532,12 @@
         "x": -2753.991027183444,
         "y": 3527.312528645819
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": -2753.991027183444,
         "y": 3527.312528645819
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "87",
@@ -1593,12 +1547,12 @@
         "x": -1063.740915759833,
         "y": 92.56666228350296
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": -1063.740915759833,
         "y": 92.56666228350296
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "88",
@@ -1608,12 +1562,12 @@
         "x": 3848.77306767803,
         "y": -1236.492084012688
       },
-      "width": 278,
-      "height": 114,
       "positionAbsolute": {
         "x": 3848.77306767803,
         "y": -1236.492084012688
-      }
+      },
+      "width": 278,
+      "height": 114
     },
     {
       "id": "89",
@@ -1624,25 +1578,32 @@
             "id": "89.1",
             "type": "variable_comparison",
             "comparisonType": "equals",
-            "firstValue": "{{gpt:redirecionamento}}",
+            "firstValue": "{{gpt:redirecionamento_agendamento}}",
             "secondValue": "triagem"
           },
           {
             "id": "89.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:redirecionamento_agendamento}}",
+            "secondValue": "atendente"
+          },
+          {
+            "id": "89.3",
             "type": "none"
           }
         ]
       },
       "position": {
-        "x": 2657.056946403199,
-        "y": -2458.671682729894
+        "x": 2655.230886284628,
+        "y": -2476.932283915603
+      },
+      "positionAbsolute": {
+        "x": 2655.230886284628,
+        "y": -2476.932283915603
       },
       "width": 278,
-      "height": 307,
-      "positionAbsolute": {
-        "x": 2657.056946403199,
-        "y": -2458.671682729894
-      }
+      "height": 379
     },
     {
       "id": "90",
@@ -1666,12 +1627,12 @@
         "x": 4290.606076704642,
         "y": -1759.985201509202
       },
-      "width": 278,
-      "height": 307,
       "positionAbsolute": {
         "x": 4290.606076704642,
         "y": -1759.985201509202
-      }
+      },
+      "width": 278,
+      "height": 307
     },
     {
       "id": "93",
@@ -1725,12 +1686,12 @@
         "x": -2892.508916763408,
         "y": -1324.940670564475
       },
-      "width": 278,
-      "height": 245,
       "positionAbsolute": {
         "x": -2892.508916763408,
         "y": -1324.940670564475
-      }
+      },
+      "width": 278,
+      "height": 245
     },
     {
       "id": "94",
@@ -1754,12 +1715,12 @@
         "x": -2492.540862918324,
         "y": -1302.014069671578
       },
-      "width": 278,
-      "height": 307,
       "positionAbsolute": {
         "x": -2492.540862918324,
         "y": -1302.014069671578
-      }
+      },
+      "width": 278,
+      "height": 307
     },
     {
       "id": "95",
@@ -1777,30 +1738,30 @@
         "missionVariables": []
       },
       "position": {
-        "x": -2057.190278990367,
-        "y": -1506.700245724338
+        "x": -2090.343739935247,
+        "y": -2185.241079729548
+      },
+      "positionAbsolute": {
+        "x": -2090.343739935247,
+        "y": -2185.241079729548
       },
       "width": 278,
-      "height": 698,
-      "positionAbsolute": {
-        "x": -2057.190278990367,
-        "y": -1506.700245724338
-      }
+      "height": 698
     },
     {
       "id": "96",
       "type": "endChatNode",
       "data": {},
       "position": {
-        "x": -2060.586834839668,
-        "y": -788.7618341073982
+        "x": -2092.161559549078,
+        "y": -1475.512096537054
+      },
+      "positionAbsolute": {
+        "x": -2092.161559549078,
+        "y": -1475.512096537054
       },
       "width": 278,
-      "height": 114,
-      "positionAbsolute": {
-        "x": -2060.586834839668,
-        "y": -788.7618341073982
-      }
+      "height": 114
     },
     {
       "id": "97",
@@ -1808,7 +1769,7 @@
       "data": {
         "apiKey": "",
         "type": "mission",
-        "prompt": "CURRENT CONTEXT\n\nThe patient selected the option to speak with the reception.\n\nYour responsibilities in this stage:\n\n1) Provide the official reception contact immediately.\n2) Offer support for additional questions.\n3) Clarify doubts using the knowledge base.\n4) Verify whether the patient already has an evaluation scheduled.\n5) If not, invite the patient to schedule one.\n6) Handle controlled redirection and exit.\n\n--------------------------------------------------\nMANDATORY FIRST MESSAGE\n\nSend:\n\n\"Você pode falar diretamente com a nossa recepção pelo WhatsApp:\n\nRecepção Aria: 61 99643-1899\n\nSe preferir, também posso esclarecer qualquer dúvida ou informação que precise.\"\n\nWait for the patient's response.\n\n--------------------------------------------------\nIF THE PATIENT HAS QUESTIONS\n\n1) Answer clearly and objectively.\n2) Use File Search for institutional information.\n3) Never invent.\n4) Never assume.\n5) Keep responses professional and concise.\n\nAfter answering, ask:\n\n\"Você já possui avaliação marcada na Clínica Aria?\"\n\n--------------------------------------------------\nIF THE PATIENT DOES NOT HAVE AN EVALUATION\n\nIf the patient says no:\n\nRespond:\n\n\"Se desejar, posso direcionar você para agendarmos uma avaliação.\"\n\nIf the patient demonstrates intention to schedule:\n\nStore internally:\n{{gpt:intencao_detectada}} = \"agendamento\"\n\nRespond only:\n\"Perfeito. Vou direcionar você agora para o agendamento.\"\n\nTerminate immediately.\n\n--------------------------------------------------\nIF THE PATIENT ALREADY HAS AN EVALUATION\n\nIf yes:\n\nRespond professionally and remain available for clarification.\n\nIf no further doubt:\nTerminate cleanly.\n\n--------------------------------------------------\nHUMAN REDIRECTION CONTROL\n\nIf the patient demonstrates intention to speak directly with a human attendant:\n\nRespond:\n\n\"Se preferir atendimento humano agora, digite a palavra 'atendente' que eu direciono você.\"\n\nOnly if the patient types exactly:\n\natendente\n\nThen:\n\n1) Store internally:\n   {{gpt:direcionamento}} = \"atendente\"\n\n2) Respond only:\n   \"Perfeito. Vou direcionar você agora para um atendente.\"\n\n3) Terminate immediately.\n\n--------------------------------------------------\nEXIT CONTROL\n\nIf the patient demonstrates intention to leave:\n\nRespond:\n\n\"Se deseja encerrar o atendimento, digite a palavra 'sair' para finalizarmos.\"\n\nOnly if the patient types exactly:\n\nsair\n\nTerminate immediately.\n\n--------------------------------------------------\nCONSTRAINTS\n\n- Do not sell aggressively.\n- Do not pressure.\n- Do not restart triage automatically.\n- Do not return JSON.\n- Do not mention system logic.\n- Maximum 1 emoji if appropriate.\n- Keep tone professional, confident and structured.\n\n--------------------------------------------------\nTERMINATION RULE\n\nAfter:\n\n- Storing agendamento intention\nOR\n- Redirecting to atendente\nOR\n- Receiving \"sair\"\nOR\n- Clarifying all doubts with no further action\n\nTerminate execution immediately.",
+        "prompt": "PRIORITY INTERRUPTION RULE — EXECUTE BEFORE ANY OTHER LOGIC\n\nYou must ALWAYS check first:\n\n1) If {{gpt:intencao_detectada}} == \"encerrar\":\n   - Do NOT send any message.\n   - Do NOT show reception contact.\n   - Do NOT ask questions.\n   - Do NOT redirect.\n   - Immediately terminate execution.\n\n2) If {{gpt:direcionamento}} == \"atendente\":\n   - Do NOT execute any further logic.\n   - Immediately terminate execution.\n\nOnly if none of the above conditions are true,\ncontinue with the flow below.\n\n--------------------------------------------------\nCURRENT CONTEXT\n\nThe patient selected the option to speak with the reception.\n\nYour responsibilities in this stage:\n\n1) Provide the official reception contact immediately.\n2) Offer support for additional questions.\n3) Clarify doubts using the knowledge base.\n4) Verify whether the patient already has an evaluation scheduled.\n5) If not, invite the patient to schedule one.\n6) Handle controlled redirection and exit.\n\n--------------------------------------------------\nMANDATORY FIRST MESSAGE\n\nSend exactly:\n\n\"Você pode falar diretamente com a nossa recepção pelo WhatsApp:\n\nRecepção Aria: 61 99643-1899\n\nSe preferir, também posso esclarecer qualquer dúvida ou informação que precise.\"\n\nWait for the patient's response.\n\n--------------------------------------------------\nIF THE PATIENT HAS QUESTIONS\n\n1) Answer clearly and objectively.\n2) Use File Search for institutional information.\n3) Never invent.\n4) Never assume.\n5) Keep responses professional and concise.\n6) Avoid long institutional texts.\n\nAfter answering, ask:\n\n\"Você já possui avaliação marcada na Clínica Aria?\"\n\n--------------------------------------------------\nIF THE PATIENT DOES NOT HAVE AN EVALUATION\n\nIf the patient says no:\n\nRespond:\n\n\"Se desejar, posso direcionar você para agendarmos uma avaliação.\"\n\nIf the patient demonstrates intention to schedule:\n\nStore internally:\n{{gpt:intencao_detectada}} = \"agendamento\"\n\nRespond only:\n\n\"Perfeito. Vou direcionar você agora para o agendamento.\"\n\nTerminate immediately.\n\n--------------------------------------------------\nIF THE PATIENT ALREADY HAS AN EVALUATION\n\nIf the patient says yes:\n\nRespond professionally and remain available for clarification.\n\nIf there are no further doubts or requests:\nTerminate execution cleanly.\n\n--------------------------------------------------\nHUMAN REDIRECTION CONTROL\n\nIf the patient demonstrates intention to speak directly with a human attendant:\n\nRespond:\n\n\"Se preferir atendimento humano agora, digite a palavra 'atendente' que eu direciono você.\"\n\nOnly if the patient types exactly:\n\natendente\n\nThen:\n\n1) Store internally:\n   {{gpt:direcionamento}} = \"atendente\"\n\n2) Respond only:\n   \"Perfeito. Vou direcionar você agora para um atendente.\"\n\n3) Terminate immediately.\n\n--------------------------------------------------\nEXIT CONTROL\n\nIf the patient demonstrates intention to leave, such as:\n\n- obrigado\n- só isso\n- já resolveu\n- não preciso de mais nada\n- tudo certo\n- perfeito, obrigado\n\nRespond:\n\n\"Se deseja encerrar o atendimento, digite a palavra 'sair' para finalizarmos.\"\n\nOnly if the patient types exactly:\n\nsair\n\nTerminate immediately.\n\n--------------------------------------------------\nCONSTRAINTS\n\n- Do not sell aggressively.\n- Do not pressure.\n- Do not restart triage automatically.\n- Do not return JSON.\n- Do not mention system logic.\n- Do not contradict previous agents.\n- Maximum 1 emoji if appropriate.\n- Keep tone professional, confident and structured.\n\n--------------------------------------------------\nTERMINATION RULE\n\nAfter:\n\n- Storing agendamento intention\nOR\n- Redirecting to atendente\nOR\n- Receiving \"sair\"\nOR\n- Clarifying all doubts with no further action\n\nTerminate execution immediately.\nDo not continue conversation.",
         "AIId": "",
         "assistantId": "asst_7hQxNBKz8u6IJPOTfal8fHIj",
         "interactionsLimit": 50,
@@ -1821,12 +1782,12 @@
         "x": -2754.354403269541,
         "y": 2707.192724875177
       },
-      "width": 278,
-      "height": 759,
       "positionAbsolute": {
         "x": -2754.354403269541,
         "y": 2707.192724875177
-      }
+      },
+      "width": 278,
+      "height": 759
     },
     {
       "id": "98",
@@ -1842,6 +1803,13 @@
           },
           {
             "id": "98.2",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_detectada}}",
+            "secondValue": "encerrar"
+          },
+          {
+            "id": "98.3",
             "type": "none"
           }
         ]
@@ -1850,12 +1818,12 @@
         "x": -2100.532381091521,
         "y": 2827.13240838944
       },
-      "width": 278,
-      "height": 307,
       "positionAbsolute": {
         "x": -2100.532381091521,
         "y": 2827.13240838944
-      }
+      },
+      "width": 278,
+      "height": 379
     },
     {
       "id": "99",
@@ -1863,10 +1831,10 @@
       "data": {
         "apiKey": "",
         "type": "mission",
-        "prompt": "You are operating in ROUTING MODE.\n\nYour only responsibility in this stage is to:\n\n1) Analyze the patient's first message.\n2) Detect if there is a clear intent.\n3) If there is a clear intent:\n   - Send a brief welcome greeting.\n   - Inform that you will redirect.\n   - Store the value in variable: intencao_inicial\n   - Terminate immediately.\n4) If there is no clear intent:\n   - Store: intencao_inicial = \"indefinido\"\n   - Do NOT send any message.\n   - Continue normally (menu will be shown by the flow).\n\n--------------------------------------------------\n\nPOSSIBLE INTENT VALUES:\n\nagendamento\ncancelamento\nreagendamento\nduvidas\nrecepcao\nindefinido\n\n--------------------------------------------------\n\nINTENT RULES\n\nagendamento → wants to schedule\ncancelamento → wants to cancel\nreagendamento → wants to change date/time\nduvidas → asking about clinic, treatments, prices\nrecepcao → wants human, urgent, pain, emergency\nindefinido → greeting only or unclear\n\n--------------------------------------------------\n\nRESPONSE RULES (ONLY IF INTENT IS CLEAR)\n\nAlways start with a short professional welcome.\n\nExamples:\n\nIf agendamento:\n\"Seja bem-vindo(a) à Clínica Aria 😊 Já vou te direcionar para iniciarmos o agendamento.\"\n\nIf cancelamento:\n\"Seja bem-vindo(a). Vou te direcionar agora para realizarmos o cancelamento.\"\n\nIf reagendamento:\n\"Seja bem-vindo(a). Já vou te direcionar para ajustarmos seu agendamento.\"\n\nIf duvidas:\n\"Seja bem-vindo(a) 😊 Vou te direcionar para que possamos esclarecer suas dúvidas.\"\n\nIf recepcao:\n\"Seja bem-vindo(a). Vou te direcionar para a recepção agora mesmo.\"\n\n--------------------------------------------------\n\nSTRICT RULES\n\n- Do NOT ask questions.\n- Do NOT provide explanations.\n- Do NOT expand conversation.\n- Do NOT mention system.\n- Do NOT mention classification.\n- Do NOT continue after redirection message.\n- Keep message short and professional.\n- Maximum 1 emoji.\n- Do NOT greet if intent is indefinido.\n\n--------------------------------------------------\n\nPatient message:\n{{conversation:user_message}}",
+        "prompt": "You are operating in ROUTING MODE.\n\nYour only responsibility in this stage is to:\n\n1) Analyze the patient's message.\n2) Detect if there is a clear intent.\n3) Store the detected value in:\n   {{gpt:intensao_inicial}}\n4) If the intent is clear:\n   - Send a brief professional message.\n   - Terminate immediately.\n5) If there is NO clear intent:\n   - Store:\n     {{gpt:intensao_inicial}} = \"indefinido\"\n   - Do NOT send any message.\n   - Terminate immediately.\n\n--------------------------------------------------\n\nPOSSIBLE INTENT VALUES:\n\nagendamento\ncancelamento\nreagendamento\nduvidas\nrecepcao\nencerrar\nindefinido\n\n--------------------------------------------------\n\nINTENT RULES\n\nagendamento → wants to schedule\ncancelamento → wants to cancel\nreagendamento → wants to change date/time\nduvidas → asking about clinic, treatments, prices\nrecepcao → wants human, urgent case, pain, emergency\nencerrar → conversation finished, gratitude, no further need\n\n--------------------------------------------------\n\nENCERRAMENTO DETECTION\n\nIf the message indicates closure such as:\n\n- obrigado / obrigada\n- ok obrigado\n- só isso\n- era só isso\n- já resolveu\n- já está resolvido\n- não preciso de mais nada\n- só queria isso mesmo\n- tudo certo agora\n- muito obrigado\n\nThen:\n\nStore:\n{{gpt:intensao_inicial}} = \"encerrar\"\n\nRespond:\n\"Perfeito 😊 Fico à disposição caso precise novamente.\"\n\nTerminate immediately.\n\n--------------------------------------------------\n\nRESPONSE RULES (ONLY IF INTENT IS CLEAR)\n\nIf agendamento:\nStore {{gpt:intensao_inicial}} = \"agendamento\"\nRespond:\n\"Seja bem-vindo(a) 😊 Já vou te direcionar para iniciarmos o agendamento.\"\n\nIf cancelamento:\nStore {{gpt:intensao_inicial}} = \"cancelamento\"\nRespond:\n\"Seja bem-vindo(a). Vou te direcionar agora para realizarmos o cancelamento.\"\n\nIf reagendamento:\nStore {{gpt:intensao_inicial}} = \"reagendamento\"\nRespond:\n\"Seja bem-vindo(a). Já vou te direcionar para ajustarmos seu agendamento.\"\n\nIf duvidas:\nStore {{gpt:intensao_inicial}} = \"duvidas\"\nRespond:\n\"Seja bem-vindo(a) 😊 Vou te direcionar para que possamos esclarecer suas dúvidas.\"\n\nIf recepcao:\nStore {{gpt:intensao_inicial}} = \"recepcao\"\nRespond:\n\"Seja bem-vindo(a). Vou te direcionar para a recepção agora mesmo.\"\n\n--------------------------------------------------\n\nSTRICT RULES\n\n- Do NOT ask questions.\n- Do NOT provide explanations.\n- Do NOT expand conversation.\n- Do NOT mention system logic.\n- Do NOT mention classification.\n- Maximum 1 emoji.\n- Always terminate execution after responding.\n- If intent is \"indefinido\", do NOT send any message.",
         "AIId": "",
         "assistantId": "asst_Uzba5lkn9eH51kVJ801VyHp2",
-        "interactionsLimit": null,
+        "interactionsLimit": 1,
         "exitKeyword": null,
         "variableField": "",
         "sendAsWhisper": true,
@@ -1876,18 +1844,19 @@
             "name": "intencao_inicial",
             "description": ""
           }
-        ]
+        ],
+        "failPath": true
       },
       "position": {
-        "x": -4559.669876900414,
-        "y": -355.3074996070555
+        "x": -4607.949142452208,
+        "y": -350.3557800632818
+      },
+      "positionAbsolute": {
+        "x": -4607.949142452208,
+        "y": -350.3557800632818
       },
       "width": 278,
-      "height": 637,
-      "positionAbsolute": {
-        "x": -4559.669876900414,
-        "y": -355.3074996070555
-      }
+      "height": 702
     },
     {
       "id": "100",
@@ -1938,6 +1907,13 @@
           },
           {
             "id": "100.7",
+            "type": "variable_comparison",
+            "comparisonType": "equals",
+            "firstValue": "{{gpt:intencao_inicial}}",
+            "secondValue": "encerrar"
+          },
+          {
+            "id": "100.8",
             "type": "none"
           }
         ]
@@ -1946,12 +1922,141 @@
         "x": -4185.323133654623,
         "y": -365.0658471714567
       },
-      "width": 278,
-      "height": 667,
       "positionAbsolute": {
         "x": -4185.323133654623,
         "y": -365.0658471714567
-      }
+      },
+      "width": 278,
+      "height": 739
+    },
+    {
+      "id": "102",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 1267.062266256182,
+        "y": -2740.718508286994
+      },
+      "positionAbsolute": {
+        "x": 1267.062266256182,
+        "y": -2740.718508286994
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "103",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Para pacientes menores de idade, o agendamento deve ser realizado por um responsável legal diretamente com a recepção da Clínica Aria.\n\nRecepção Aria: 61 99643-1899\n\nEstarei finalizando este atendimento agora.\n\nCaso tenha alguma dúvida no futuro, é só entrar em contato novamente 😊\n",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 939.650243740246,
+        "y": -2803.711066503649
+      },
+      "positionAbsolute": {
+        "x": 939.650243740246,
+        "y": -2803.711066503649
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "104",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Para procedimentos de Harmonização Orofacial, o atendimento é realizado pelo setor específico responsável.\n\nVocê pode entrar em contato diretamente pelo WhatsApp:\n\n📲 61 99220-7853\n\nEstarei encerrando este atendimento agora.\nCaso tenha outras dúvidas no futuro, é só nos enviar uma nova mensagem 😊",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 1096.580127716215,
+        "y": -2474.596837306313
+      },
+      "positionAbsolute": {
+        "x": 1096.580127716215,
+        "y": -2474.596837306313
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "105",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 1483.887832735285,
+        "y": -2405.689108939751
+      },
+      "positionAbsolute": {
+        "x": 1483.887832735285,
+        "y": -2405.689108939751
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "106",
+      "type": "messageNode",
+      "data": {
+        "messageData": "Identificamos que o seu caso pode exigir atendimento com prioridade.\n\nPara situações de urgência, o contato deve ser feito diretamente com a recepção da Clínica Aria:\n\n📲 61 99643-1899\n\nEstarei encerrando este atendimento agora para que você possa falar diretamente com a equipe.\nCaso precise de algo mais, é só nos enviar uma nova mensagem.",
+        "sendAsWhisper": false
+      },
+      "position": {
+        "x": 1151.320525288963,
+        "y": -2178.137213857865
+      },
+      "positionAbsolute": {
+        "x": 1151.320525288963,
+        "y": -2178.137213857865
+      },
+      "width": 278,
+      "height": 250
+    },
+    {
+      "id": "107",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": 1528.144245113771,
+        "y": -2111.778319800666
+      },
+      "positionAbsolute": {
+        "x": 1528.144245113771,
+        "y": -2111.778319800666
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "108",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": -4181.379273374949,
+        "y": 513.713273629468
+      },
+      "positionAbsolute": {
+        "x": -4181.379273374949,
+        "y": 513.713273629468
+      },
+      "width": 278,
+      "height": 114
+    },
+    {
+      "id": "109",
+      "type": "endChatNode",
+      "data": {},
+      "position": {
+        "x": -1764.071631654826,
+        "y": 3248.00649949526
+      },
+      "positionAbsolute": {
+        "x": -1764.071631654826,
+        "y": 3248.00649949526
+      },
+      "width": 278,
+      "height": 114
     }
   ],
   "edges": [
@@ -1994,36 +2099,6 @@
       "source": "29",
       "sourceHandle": "29.1",
       "target": "26"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
-      "id": "32",
-      "source": "27",
-      "sourceHandle": "27.2",
-      "target": "32"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
-      "id": "reactflow__edge-32-21",
-      "source": "32",
-      "sourceHandle": null,
-      "target": "21"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
-      "id": "reactflow__edge-2727.1-33",
-      "source": "27",
-      "sourceHandle": "27.1",
-      "target": "33"
     },
     {
       "type": "smoothstep",
@@ -2560,19 +2635,9 @@
       "markerEnd": {
         "type": "arrow"
       },
-      "id": "80",
-      "source": "79",
-      "sourceHandle": "79.1",
-      "target": "80"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
       "id": "reactflow__edge-7979.2-11",
       "source": "79",
-      "sourceHandle": "79.2",
+      "sourceHandle": "79.4",
       "target": "11"
     },
     {
@@ -2704,16 +2769,6 @@
       "source": "26",
       "sourceHandle": "26",
       "target": "89"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
-      "id": "reactflow__edge-8989.2-27",
-      "source": "89",
-      "sourceHandle": "89.2",
-      "target": "27"
     },
     {
       "type": "smoothstep",
@@ -2880,16 +2935,6 @@
       "markerEnd": {
         "type": "arrow"
       },
-      "id": "reactflow__edge-9898.2-73",
-      "source": "98",
-      "sourceHandle": "98.2",
-      "target": "73"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
       "id": "reactflow__edge-6060.1-21",
       "source": "60",
       "sourceHandle": "60.1",
@@ -2940,16 +2985,6 @@
       "markerEnd": {
         "type": "arrow"
       },
-      "id": "reactflow__edge-100100.3-3",
-      "source": "100",
-      "sourceHandle": "100.7",
-      "target": "3"
-    },
-    {
-      "type": "smoothstep",
-      "markerEnd": {
-        "type": "arrow"
-      },
       "id": "reactflow__edge-100100.6-3",
       "source": "100",
       "sourceHandle": "100.6",
@@ -2994,6 +3029,146 @@
       "source": "100",
       "sourceHandle": "100.2",
       "target": "44"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "103",
+      "source": "79",
+      "sourceHandle": "79.1",
+      "target": "103"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-103-102",
+      "source": "103",
+      "sourceHandle": null,
+      "target": "102"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "104",
+      "source": "79",
+      "sourceHandle": "79.2",
+      "target": "104"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "105",
+      "source": "104",
+      "sourceHandle": null,
+      "target": "105"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "106",
+      "source": "79",
+      "sourceHandle": "79.3",
+      "target": "106"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "107",
+      "source": "106",
+      "sourceHandle": null,
+      "target": "107"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8989.2-74",
+      "source": "89",
+      "sourceHandle": "89.2",
+      "target": "74"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-8989.3-33",
+      "source": "89",
+      "sourceHandle": "89.3",
+      "target": "33"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.7-108",
+      "source": "100",
+      "sourceHandle": "100.7",
+      "target": "108"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "109",
+      "source": "98",
+      "sourceHandle": "98.2",
+      "target": "109"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9898.3-109",
+      "source": "98",
+      "sourceHandle": "98.3",
+      "target": "109"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-100100.8-3",
+      "source": "100",
+      "sourceHandle": "100.8",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9999.3-3",
+      "source": "99",
+      "sourceHandle": "99.3",
+      "target": "3"
+    },
+    {
+      "type": "smoothstep",
+      "markerEnd": {
+        "type": "arrow"
+      },
+      "id": "reactflow__edge-9999.1-3",
+      "source": "99",
+      "sourceHandle": "99.1",
+      "target": "3"
     }
   ]
 }
