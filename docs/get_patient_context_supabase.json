@@ -1,0 +1,138 @@
+{
+    "name": "Ar.Ia - Get Patient Context (Supabase)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "get_patient_context",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-get-context",
+            "name": "Webhook Recebe Telefone",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                0,
+                0
+            ],
+            "webhookId": "ca1a3aa8-c16c-4cf2-b7b3-dde0c174353c"
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "https://vcpakshwsmagvusmoupq.supabase.co/rest/v1/pacientes",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Accept",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "telefone",
+                            "value": "={{ 'eq.' + $('Webhook Recebe Telefone').first().json.body.telefone }}"
+                        },
+                        {
+                            "name": "select",
+                            "value": "nome,data_nascimento,perfil_comportamental"
+                        },
+                        {
+                            "name": "limit",
+                            "value": "1"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "http-supabase-get",
+            "name": "Busca no Supabase",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                240,
+                0
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "name": "Supabase"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// O Supabase retorna um array: [] se não encontrou, [{...}] se encontrou\nconst items = $input.all();\n\nif (items.length > 0) {\n  const p = items[0].json;\n  return [{\n    json: {\n      novo_paciente: 'false',\n      nome: p.nome || '',\n      data_nascimento: p.data_nascimento || '',\n      perfil: p.perfil_comportamental || '',\n      historico: ''\n    }\n  }];\n}\n\n// Nenhum paciente encontrado - retorna como novo\nreturn [{\n  json: {\n    novo_paciente: 'true',\n    nome: '',\n    data_nascimento: '',\n    perfil: '',\n    historico: ''\n  }\n}];"
+            },
+            "id": "code-format-response",
+            "name": "Formata Contexto",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                480,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json) }}",
+                "options": {}
+            },
+            "id": "respond-to-webhook",
+            "name": "Respond to Webhook",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
+            "position": [
+                720,
+                0
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Recebe Telefone": {
+            "main": [
+                [
+                    {
+                        "node": "Busca no Supabase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Busca no Supabase": {
+            "main": [
+                [
+                    {
+                        "node": "Formata Contexto",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Formata Contexto": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1",
+        "callerPolicy": "workflowsFromSameOwner",
+        "availableInMCP": true
+    }
+}
