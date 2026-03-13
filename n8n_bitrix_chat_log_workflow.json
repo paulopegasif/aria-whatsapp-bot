@@ -1,0 +1,165 @@
+{
+  "name": "Ar.Ia - Log Interações Bitrix24",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook-bitrix-logs",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "1a08bd4f-01a6-45ef-a3d8-a28a34d83020",
+      "webhookId": "webhook-bitrix-logs"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.body.bitrix_webhook_url }}/imopenlines.crm.chat.get",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawBody": "={\n  \"CRM_ENTITY_TYPE\": \"contact\",\n  \"CRM_ENTITY\": {{ $json.body.contact_id }}\n}",
+        "options": {}
+      },
+      "name": "B24 - Get Chat ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        450,
+        300
+      ],
+      "id": "dcfdfc63-6eaf-4b2a-b605-1a80c987df7e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.bitrix_webhook_url }}/imopenlines.session.history.get",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawBody": "={\n  \"CHAT_ID\": {{ $json.result[0].CHAT_ID }}\n}",
+        "options": {}
+      },
+      "name": "B24 - Get Chat History",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        650,
+        300
+      ],
+      "id": "671e2175-1e35-4927-a065-2dc21516e87f"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "result.message",
+        "options": {}
+      },
+      "name": "Item Lists",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 2.1,
+      "position": [
+        850,
+        300
+      ],
+      "id": "4e1df3b9-df80-49ad-a7f4-ec857173ca35"
+    },
+    {
+      "parameters": {
+        "jsCode": "const newItems = [];\nfor (const item of $input.all()) {\n  const msg = item.json;\n  // Determinar quem enviou\n  // Se senderid for '0', geralmente é o sistema/bot de Open Channels\n  // Se for diferente (ex: id do contato), é o usuário.\n  const role = msg.senderid === '0' ? 'assistant' : 'user';\n  \n  newItems.push({\n    json: {\n      telefone: $('Webhook').first().json.body.telefone,\n      contact_id: $('Webhook').first().json.body.contact_id,\n      chat_id: msg.chatid,\n      message_id: msg.id,\n      role: role,\n      mensagem: msg.text,\n      data_mensagem: msg.date\n    }\n  });\n}\nreturn newItems;"
+      },
+      "name": "Format Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1050,
+        300
+      ],
+      "id": "c13d73b5-4b47-4148-963d-4c3d494a8c99"
+    },
+    {
+      "parameters": {
+        "table": "logs_interacoes_bitrix",
+        "columns": "telefone,contact_id,chat_id,message_id,role,mensagem,data_mensagem",
+        "options": {}
+      },
+      "name": "Supabase Insert",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1250,
+        300
+      ],
+      "id": "6a388f58-cda6-4076-bbb0-6e3e52f40683",
+      "credentials": {
+        "supabaseApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "YOUR_CREDENTIAL_NAME"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "B24 - Get Chat ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B24 - Get Chat ID": {
+      "main": [
+        [
+          {
+            "node": "B24 - Get Chat History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B24 - Get Chat History": {
+      "main": [
+        [
+          {
+            "node": "Item Lists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Lists": {
+      "main": [
+        [
+          {
+            "node": "Format Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Messages": {
+      "main": [
+        [
+          {
+            "node": "Supabase Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
