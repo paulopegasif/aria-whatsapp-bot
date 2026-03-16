@@ -3,6 +3,7 @@ services:
     build:
       context: ./ai-service
       dockerfile: Dockerfile
+    pull_policy: build
     container_name: aria-ai-service
     restart: unless-stopped
     env_file:
