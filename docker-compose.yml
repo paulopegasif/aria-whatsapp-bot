@@ -44,19 +44,6 @@ services:
       - aria-network
     restart: always
 
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    restart: always
-    ports:
-      - "9000:9000"
-      - "8000:8000"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    networks:
-      - aria-network
-
   evolution-api:
     container_name: evolution_api
     image: evoapicloud/evolution-api:v2.3.7
@@ -103,7 +90,6 @@ volumes:
   redis_data:
   evolution_instances:
   evolution_pgdata:
-  portainer_data:
 
 
 networks:
