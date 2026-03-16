@@ -1,21 +1,47 @@
 {
-  "mcpServers": {
-
+  "servers": {
     "b24-dev-mcp": {
       "url": "https://mcp-dev.bitrix24.com/mcp",
       "type": "http"
     },
-    "n8n-mcp": {
+    "n8n-mcp-vps": {
       "type": "http",
-      "url": "https://api.n8n-mcp.com/mcp",
+      "url": "${input:n8nMcpHttpUrl}",
       "headers": {
-        "Authorization": "Bearer nmcp_9ed6485*********************************************************"
+        "Authorization": "Bearer ${input:n8nMcpHttpToken}"
+      }
+    },
+    "hostinger-mcp": {
+      "type": "stdio",
+      "command": "/Users/paulosilva/.nvm/versions/node/v22.17.0/bin/npx",
+      "args": [
+        "-y",
+        "hostinger-api-mcp@latest",
+        "--stdio"
+      ],
+      "env": {
+        "API_TOKEN": "${input:api_token}"
       }
     }
-
-
-
   },
   "inputs": [
+    {
+      "type": "promptString",
+      "id": "n8nMcpHttpUrl",
+      "description": "URL HTTP do MCP do n8n na VPS (ex.: https://mcp.seudominio.com/mcp)",
+      "password": false
+    },
+    {
+      "type": "promptString",
+      "id": "n8nMcpHttpToken",
+      "description": "Token de acesso do MCP do n8n na VPS",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "api_token",
+      "description": "Insira seu token de API da Hostinger (obrigatorio)",
+      "password": true
+    }
   ]
 }

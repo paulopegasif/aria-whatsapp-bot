@@ -107,24 +107,20 @@ docker compose up -d
 
 ## 🤖 MCP no VS Code (Copilot)
 
-O projeto já possui configuração de MCP em `.vscode/mcp.json` com 3 opções:
+O projeto já possui configuração de MCP em `.vscode/mcp.json` com 3 servidores:
 
--   **`n8n-mcp`**: conecta no MCP nativo do n8n (SSE local via `supergateway`).
-    -   Uso recomendado: operar o MCP exposto pelo seu container n8n local.
--   **`n8n-mcp-docker`**: roda o servidor `czlonkowski/n8n-mcp` em Docker (stdio).
-    -   Uso recomendado: descoberta/validação de nós e criação de fluxos com base em templates/documentação do n8n-MCP.
--   **`n8n-mcp-http`**: conecta no `n8n-mcp` hospedado em endpoint HTTP remoto.
-    -   Uso recomendado: ambiente de produção com URL pública do servidor MCP.
+-   **`b24-dev-mcp`**: documentação oficial Bitrix24.
+-   **`n8n-mcp-vps`**: MCP HTTP do n8n publicado na sua VPS.
+-   **`hostinger-api-mcp`**: MCP HTTP da API da Hostinger.
 
 ### Inputs esperados no primeiro uso
 
--   `n8nMcpAccessToken` (token do MCP nativo do n8n)
--   `n8nApiUrl` e `n8nApiKey` (para `n8n-mcp-docker` com recursos de gerenciamento de workflow)
--   `n8nMcpHttpUrl` e `n8nMcpHttpToken` (para `n8n-mcp-http`)
+-   `n8nMcpHttpUrl` e `n8nMcpHttpToken` (para `n8n-mcp-vps`)
+-   `hostingerMcpUrl` e `hostingerMcpToken` (para `hostinger-api-mcp`)
 
-### Dica rápida para n8n local via Docker
+### Dica rápida para produção (VPS)
 
-Para o `n8n-mcp-docker`, use `N8N_API_URL` apontando para `http://host.docker.internal:55000` quando o n8n estiver publicado localmente nessa porta.
+Use HTTPS com domínio próprio e mantenha tokens fora do repositório.
 
 ------------------------------------------------------------------------
 

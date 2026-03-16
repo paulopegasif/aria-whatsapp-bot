@@ -1,4 +1,22 @@
 services:
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: aria-ai-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Sao_Paulo
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8002:8002"
+    depends_on:
+      - chromadb
+    networks:
+      - aria-network
+
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n-aria
