@@ -6,11 +6,11 @@ services:
     pull_policy: build
     container_name: aria-ai-service
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       - TZ=America/Sao_Paulo
       - PYTHONUNBUFFERED=1
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     ports:
       - "8002:8002"
     depends_on:
@@ -23,8 +23,6 @@ services:
     container_name: n8n-aria
     ports:
       - "55000:5678"
-    env_file:
-      - .env
     volumes:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped
@@ -32,8 +30,12 @@ services:
       - TZ=America/Sao_Paulo
       - N8N_DEFAULT_TIMEZONE=America/Sao_Paulo
       - NODE_FUNCTION_ALLOW_EXTERNAL=ioredis
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
     networks:
       - aria-network
+
   chromadb:
     image: chromadb/chroma
     container_name: aria-chromadb
@@ -51,8 +53,13 @@ services:
     restart: always
     ports:
       - "8080:8080"
-    env_file:
-      - .env.evolution
+    environment:
+      - SERVER_URL=${EVOLUTION_SERVER_URL}
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution_pass@evolution-postgres:5432/evolution
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://redis-aria:6379/6
     volumes:
       - evolution_instances:/evolution/instances
     networks:
@@ -91,7 +98,6 @@ volumes:
   redis_data:
   evolution_instances:
   evolution_pgdata:
-
 
 networks:
   aria-network:
