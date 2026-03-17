@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "hostinger-mcp": {
+      "type": "stdio",
+      "command": "/Users/paulosilva/.nvm/versions/node/v22.17.0/bin/npx",
+      "args": ["-y", "hostinger-api-mcp@latest", "--stdio"],
+      "env": {
+        "API_TOKEN": "5xAK6OcHOLG16dhn6nRV4crQEGB4RA5Uwo0e2C0J89dd470b"
+      }
+    }
+  }
+}

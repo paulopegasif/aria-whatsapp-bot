@@ -20,7 +20,7 @@
         "--stdio"
       ],
       "env": {
-        "API_TOKEN": "${input:api_token}"
+        "API_TOKEN": "5xAK6OcHOLG16dhn6nRV4crQEGB4RA5Uwo0e2C0J89dd470b"
       }
     }
   },
