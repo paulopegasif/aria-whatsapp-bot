@@ -88,6 +88,16 @@ services:
       - redis_data:/data
     networks:
       - aria-network
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-aria
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - aria-network
+    depends_on:
+      - n8n
+      - evolution-api
 
 volumes:
   n8n_data:
